@@ -1,0 +1,46 @@
+# Gradle files
+.gradle/
+**/build/
+**/out/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local configuration
+/local.properties
+/.idea/
+/*.iml
+/.vscode/
+
+# Dependency caches
+**/.cxx/
+**/captures/
+**/debug/
+**/release/
+**/.externalNativeBuild/
+**/.m2/
+
+# Keystore files (security)
+**/keystore/
+**/*.jks
+**/*.keystore
+
+# Android Studio files
+/.gradle/
+/build/
+/captures/
+/.externalNativeBuild/
+.navigation/
+/.cxx/
+/*.log
+
+# Generated files
+/generated/
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.DS_Store
+*.apk
+*.ap_
+*.aab

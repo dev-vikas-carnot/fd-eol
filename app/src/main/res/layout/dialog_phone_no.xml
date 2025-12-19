@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/white">
+
+        <TextView
+            android:id="@+id/tv_welcome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="70dp"
+            android:text="Welcome to"
+            android:textColor="@color/black"
+            android:textFontWeight="400"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:targetApi="p" />
+
+        <TextView
+            android:id="@+id/tv_app_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:text="@string/app_name"
+            android:textColor="@color/black"
+            android:textFontWeight="700"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_welcome"
+            tools:targetApi="p" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_phone_number"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            android:hint="Phone Number"
+            app:errorContentDescription="Error"
+            app:errorEnabled="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_app_name"
+            app:startIconDrawable="@drawable/ic_baseline_local_phone_24">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_phone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:digits="0123456789"
+                android:inputType="number"
+                android:maxLength="10" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_get_otp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:text="Get Otp"
+            android:textFontWeight="700"
+            android:textStyle="bold"
+            tools:targetApi="p"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/til_phone_number" />
+    </LinearLayout>
+</layout>

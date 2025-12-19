@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="viewModel"
+            type="com.carnot.fd.eol.features.activatesim.SimActivationViewModel" />
+    </data>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:theme="@style/AppInputTheme">
+
+            <!-- IMEI input -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:weightSum="1">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sim_activation_enter_imei"
+                        android:textColor="@color/black"
+                        android:textSize="18sp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_imei"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/_16sdp"
+                        android:hint="@string/sim_activation_imei_hint"
+                        app:errorEnabled="true"
+                        app:hintEnabled="true">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_imei"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/sim_activation_imei_hint"
+                            android:imeOptions="actionDone"
+                            android:inputType="number"
+                            android:lines="1"
+                            android:maxLength="15"
+                            android:maxLines="1"
+                            android:text='@{viewModel.imei}'
+                            android:textSize="14sp" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- OR divider -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:showDividers="beginning|end"
+                android:weightSum="3">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_marginVertical="8dp"
+                    android:layout_weight="1"
+                    android:background="@color/grey" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:text="@string/sim_activation_or"
+                    android:textColor="@color/grey"
+                    android:textSize="@dimen/_12ssp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_marginVertical="8dp"
+                    android:layout_weight="1"
+                    android:background="@color/grey" />
+
+            </LinearLayout>
+
+            <!-- Scan QR to fill IMEI -->
+            <LinearLayout
+                android:id="@+id/scanQR"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:layout_width="160dp"
+                    android:layout_height="160dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/baseline_qr_code_scanner_24"
+                    app:tint="@color/colorPrimaryDark" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/sim_activation_scan_qr"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="@dimen/_12sdp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <!-- Current IMEI display -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="@string/sim_activation_imei_label"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="@dimen/_12sdp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text='@{viewModel.imei}'
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="@dimen/_12sdp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/submitButton"
+            style="@style/CustomButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:backgroundTint="@color/colorPrimary"
+            android:enabled='@{viewModel.isSubmitEnabled}'
+            android:text="@string/sim_activation_submit"
+            android:textColor="@color/white" />
+
+    </RelativeLayout>
+</layout>

@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <import type="com.carnot.fd.eol.data.EolUiState" />
+
+        <variable
+            name="viewModel"
+            type="com.carnot.fd.eol.EndOfLineTestingViewModel" />
+    </data>
+
+    <!-- ROOT -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- SCROLLABLE CONTENT -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/scrollContent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fillViewport="true"
+            app:layout_constraintBottom_toTopOf="@id/submitButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- YOUR EXISTING LinearLayout CONTENT -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:theme="@style/AppInputTheme">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="1">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.7"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Step 1"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Scan IMEI"
+                            android:textColor="@{viewModel.uiState instanceof EolUiState.ImeiInput ? @color/black : @color/colorPrimary}"
+                            android:textSize="18sp" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/til_imei"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/_16sdp"
+                            android:hint="IMEI"
+                            app:errorContentDescription="Invalid Phone number"
+                            app:errorEnabled="true"
+                            app:hintEnabled="true">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/et_imei"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:enabled="@{viewModel.uiState instanceof EolUiState.ImeiInput}"
+                                android:hint="IMEI"
+                                android:imeOptions="actionDone"
+                                android:inputType="text"
+                                android:lines="1"
+                                android:maxLines="1"
+                                android:text="@{viewModel.imei}"
+                                android:textSize="14sp" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <Button
+                            android:id="@+id/btnSubmitImei"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:backgroundTint="@color/colorPrimary"
+                            android:drawableTint="@color/white"
+                            android:text="Submit IMEI"
+                            android:textColor="@color/white"
+                            android:visibility="@{viewModel.uiState instanceof EolUiState.ImeiInput ? View.VISIBLE : View.GONE}" />
+
+
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btnScanTractorImei"
+                        style="@style/CustomButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.3"
+                        android:backgroundTint="@color/colorPrimary"
+                        android:drawableRight="@drawable/baseline_qr_code_scanner_24"
+                        android:drawableTint="@color/white"
+                        android:text="SCAN"
+                        android:textColor="@color/white"
+                        android:visibility="@{viewModel.uiState instanceof EolUiState.ImeiInput ? View.VISIBLE : View.GONE}" />
+
+
+                    <ImageView
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="0.3"
+                        android:src="@drawable/baseline_check_circle_outline_24"
+                        android:visibility="@{viewModel.uiState instanceof EolUiState.ImeiInput ? View.GONE : View.VISIBLE}"
+                        app:tint="@color/green" />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="@dimen/_12sdp"
+                    android:layout_marginBottom="@dimen/_8sdp"
+                    android:background="@color/grey" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="1">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.7"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:text="Step 2" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Verifying Device Connectivity" />
+
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btnRetry"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.3"
+                        android:background="@color/colorPrimary"
+                        android:enabled='@{viewModel.retryTime == "0"}'
+                        android:onClick="@{() -> viewModel.onRetry()}"
+                        android:padding="8dp"
+                        android:text='@{viewModel.retryTime == "0" ? @string/retry : "Retry In: "+viewModel.retryTime}'
+                        android:textColor="@android:color/white"
+                        android:textSize="10sp"
+                        android:visibility="@{viewModel.hideRefresh ? View.GONE : View.VISIBLE}" />
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/baseline_lightbulb_24"
+                            android:tint="@{viewModel.batteryChargingStatus ? @color/green : @color/grey}" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="BATTERY CONNECTED" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text='@{viewModel.batteryChargingStatus ? "Pass" : "Fail"}'
+                            android:textColor="@{viewModel.batteryChargingStatus ? @color/green : @color/colorAccent}" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/baseline_lightbulb_24"
+                            android:tint="@{viewModel.gpsLockStatus ? @color/green : @color/grey}" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="GPS LOCK" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text='@{viewModel.gpsLockStatus ? "Pass" : "Fail"}'
+                            android:textColor="@{viewModel.gpsLockStatus ? @color/green : @color/colorAccent}" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/baseline_lightbulb_24"
+                            android:tint="@{viewModel.gsmPingStatus ? @color/green : @color/grey}" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="GSM PING" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text='@{viewModel.gsmPingStatus ? "Pass" : "Fail"}'
+                            android:textColor="@{viewModel.gsmPingStatus ? @color/green : @color/colorAccent}" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="@dimen/_12sdp"
+                    android:layout_marginBottom="@dimen/_8sdp"
+                    android:background="@color/grey" />
+
+                <!-- Step 3 : Scan Chassis (VIN) - GATED BY DEVICE STATUS -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal"
+                    android:visibility="@{(viewModel.uiState instanceof EolUiState.VinInputEnabled || viewModel.uiState instanceof EolUiState.SubmitReady || viewModel.uiState instanceof EolUiState.Submitted) ? View.VISIBLE : View.GONE}"
+                    android:weightSum="1">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.7"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Step 3"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Scan Chassis Number (VIN)"
+                            android:textColor="@{viewModel.uiState instanceof EolUiState.SubmitReady ? @color/colorPrimary : @color/black}"
+                            android:textSize="18sp" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/til_vin"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/_16sdp"
+                            app:errorEnabled="true">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/et_vin"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:enabled="@{viewModel.uiState instanceof EolUiState.VinInputEnabled || viewModel.uiState instanceof EolUiState.SubmitReady}"
+                                android:hint="VIN"
+                                android:imeOptions="actionDone"
+                                android:inputType="textCapCharacters"
+                                android:lines="1"
+                                android:maxLines="1"
+                                android:text="@{viewModel.vin}"
+                                android:textSize="14sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <Button
+                            android:id="@+id/btnSubmitVin"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:backgroundTint="@color/colorPrimary"
+                            android:text="Verify VIN"
+                            android:textColor="@color/white"
+                            android:visibility="@{(viewModel.uiState instanceof EolUiState.VinInputEnabled || viewModel.uiState instanceof EolUiState.SubmitReady) ? View.VISIBLE : View.GONE}" />
+
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btnScanVin"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.3"
+                        android:backgroundTint="@color/colorPrimary"
+                        android:drawableRight="@drawable/baseline_qr_code_scanner_24"
+                        android:drawableTint="@color/white"
+                        android:text="SCAN"
+                        android:textColor="@color/white"
+                        android:visibility="@{(viewModel.uiState instanceof EolUiState.VinInputEnabled || viewModel.uiState instanceof EolUiState.SubmitReady) ? View.VISIBLE : View.GONE}" />
+
+                    <ImageView
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:src="@drawable/baseline_check_circle_outline_24"
+                        android:visibility="@{viewModel.uiState instanceof EolUiState.SubmitReady ? View.VISIBLE : View.GONE}"
+                        app:tint="@color/green" />
+
+                </LinearLayout>
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+        <Button
+            android:id="@+id/submitButton"
+            style="@style/CustomButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:backgroundTint="@{viewModel.uiState instanceof EolUiState.SubmitReady ? @color/colorPrimary : @color/grey}"
+            android:enabled="@{viewModel.uiState instanceof EolUiState.SubmitReady}"
+            android:onClick="@{() -> viewModel.submit()}"
+            android:text="SUBMIT"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

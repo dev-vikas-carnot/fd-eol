@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Mahindra EOL</string>
+    <string name="retry">Retry</string>
+    <string name="retry_in">Retry in: </string>
+    <string name="registeration_code_sent_on">Registeration Code Sent On</string>
+    <string name="code_not_received">Code Not Received?</string>
+    <string name="submit">Submit</string>
+    <string name="loading_data">Loading Data</string>
+    <string name="resend_otp_heading">Request Again</string>
+    <string name="secs">secs</string>
+    <string name="logout">Logout</string>
+    <string name="welcome">Welcome <b>%1$s</b></string>
+    <string name="help">Help</string>
+
+    <!-- SIM Activation -->
+    <string name="sim_activation_title">SIM Activation</string>
+    <string name="sim_activation_enter_imei">Enter Device IMEI</string>
+    <string name="sim_activation_imei_hint">IMEI</string>
+    <string name="sim_activation_or">OR</string>
+    <string name="sim_activation_scan_qr">SCAN QR</string>
+    <string name="sim_activation_imei_label">IMEI:</string>
+    <string name="sim_activation_submit">SUBMIT</string>
+    <string name="sim_activation_progress">Submitting SIM activation…</string>
+    <string name="sim_activation_success">SIM activation request submitted successfully</string>
+    <string name="error_scan_failed">Scan failed, please try again</string>
+</resources>

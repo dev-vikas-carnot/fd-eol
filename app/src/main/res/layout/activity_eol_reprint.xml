@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="viewModel"
+            type="com.carnot.fd.eol.features.printer.ReprintViewModelViewModel" />
+    </data>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">]
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="16dp"
+        android:theme="@style/AppInputTheme"
+        >
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:weightSum="1">
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Enter Tractor VIN"
+                    android:textSize="18sp"
+                    android:textColor="@{viewModel.isVinScanned ? @color/colorPrimary : @color/black}" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_imei"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_marginEnd="@dimen/_16sdp"
+                    app:errorContentDescription="Invalid Phone number"
+                    app:errorEnabled="true"
+                    android:hint="VIN"
+                    app:hintEnabled="true">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_vin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="VIN"
+                        android:lines="1"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:imeOptions="actionDone"
+                        android:text='@{viewModel.vin}'
+                        android:textSize="14sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+<!--
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnSubmitVin"
+                    android:backgroundTint="@color/colorPrimary"
+                    android:textColor="@color/white"
+                    android:visibility="@{viewModel.isVinScanned ? View.GONE : View.VISIBLE}"
+                    android:drawableTint="@color/white"
+                    android:text="Submit vin"/>
+
+-->
+
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:gravity="center"
+            android:showDividers="beginning|end"
+            android:orientation="horizontal"
+            android:weightSum="3"
+            android:layout_height="wrap_content">
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="8dp"
+                android:layout_marginVertical="8dp"
+                android:background="@color/grey" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="OR"
+                android:gravity="center_horizontal"
+                android:textSize="@dimen/_12ssp"
+                android:textColor="@color/grey"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="8dp"
+                android:layout_marginVertical="8dp"
+                android:background="@color/grey" />
+
+    </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/scanQR"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:orientation="vertical">
+            <androidx.appcompat.widget.AppCompatImageView
+                android:layout_width="160dp"
+                android:layout_height="160dp"
+                app:tint="@color/colorPrimaryDark"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/baseline_qr_code_scanner_24"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/_12sdp"
+                android:textStyle="bold"
+                android:layout_gravity="center_horizontal"
+                android:textColor="@color/colorPrimaryDark"
+                android:text="SCAN QR"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/_12sdp"
+                android:textStyle="bold"
+                android:layout_margin="5dp"
+                android:textColor="@color/colorPrimaryDark"
+                android:text="VIN:"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/_12sdp"
+                android:layout_margin="5dp"
+                android:textColor="@color/colorPrimaryDark"
+                android:text="@{viewModel.vin}"/>
+        </LinearLayout>
+
+
+
+
+
+
+    </LinearLayout>
+
+        <Button
+            android:id="@+id/submitButton"
+            style="@style/CustomButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:backgroundTint="@color/colorPrimary"
+            android:text="SUBMIT"
+            android:textColor="@color/white" />
+
+
+
+    </RelativeLayout>
+</layout>

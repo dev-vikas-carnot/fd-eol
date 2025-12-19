@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="com.carnot.fd.eol.BuildConfig" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <!-- Welcome -->
+        <TextView
+            android:id="@+id/username_welcome"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Welcome"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_16ssp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Scrollable Actions -->
+        <ScrollView
+            android:id="@+id/scrollContent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fillViewport="true"
+            app:layout_constraintBottom_toTopOf="@id/version_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/username_welcome">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingTop="16dp">
+
+                <Button
+                    android:id="@+id/btnActivateSim"
+                    style="@style/CustomButton"
+                    android:text="Activate SIM" />
+
+
+                <Button
+                    android:id="@+id/btnEndOfLineTesting"
+                    style="@style/CustomButton"
+                    android:layout_marginTop="12dp"
+                    android:text="End of Line Testing" />
+
+                <Button
+                    android:id="@+id/btnVerifyStatus"
+                    style="@style/CustomButton"
+                    android:layout_marginTop="12dp"
+                    android:text="Verify EOL Status" />
+
+                <Button
+                    android:id="@+id/btnTestZebraPrinter"
+                    style="@style/CustomButton"
+                    android:layout_marginTop="12dp"
+                    android:text="Test Printer" />
+
+                <Button
+                    android:id="@+id/btnRePrint"
+                    style="@style/CustomButton"
+                    android:layout_marginTop="12dp"
+                    android:text="Re-Print" />
+
+                <Button
+                    android:id="@+id/shareLog"
+                    style="@style/CustomButton"
+                    android:layout_marginTop="12dp"
+                    android:text="Share Log File" />
+
+                <Button
+                    android:id="@+id/eolHistory"
+                    style="@style/CustomButton"
+                    android:layout_marginTop="12dp"
+                    android:text="EOL History" />
+
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Footer / Version -->
+        <TextView
+            android:id="@+id/version_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{BuildConfig.BUILD_TYPE + ` - v` + BuildConfig.VERSION_NAME}"
+            android:textColor="@color/grey"
+            android:textSize="@dimen/_12ssp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/tvPrinterStatus"
+            android:layout_width="wrap_content"
+            android:textSize="@dimen/_10sdp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/_8sdp"
+            android:textColor="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/version_text" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

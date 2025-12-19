@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:theme="@style/AppInputTheme"
+        tools:context=".features.login.ui.LoginActivity"
+        android:paddingBottom="@dimen/_30sdp"
+        >
+
+        <TextView
+            android:id="@+id/versionTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:layout_centerHorizontal="true"
+            android:textColor="@color/black"
+            android:gravity="center"
+            android:layout_marginTop="@dimen/_70sdp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginBottom="10dp"
+            android:src="@drawable/ic_fd_eol_logo"
+            app:layout_constraintBottom_toTopOf="@+id/tv_welcome"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+
+        <TextView
+            android:id="@+id/tv_welcome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/_5sdp"
+            android:layout_marginStart="@dimen/_16sdp"
+            android:text="Welcome"
+            android:textColor="@color/colorPrimary"
+            android:textSize="@dimen/_22ssp"
+            android:textStyle="bold"
+            android:padding="4dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/til_phone_number"
+            />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_phone_number"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_16sdp"
+            android:layout_marginEnd="@dimen/_16sdp"
+            app:errorContentDescription="Invalid Phone number"
+            app:errorEnabled="true"
+            app:hintEnabled="false"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/btn_req_verification"
+            app:startIconDrawable="@drawable/baseline_person_24">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_userName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="User Name"
+                android:imeOptions="actionDone"
+                android:padding="4dp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/btn_req_verification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_16sdp"
+            android:layout_marginEnd="@dimen/_16sdp"
+            android:layout_marginBottom="@dimen/_16sdp"
+            android:padding="@dimen/_14sdp"
+            android:text="Login"
+            android:background="@color/colorPrimary"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/_16ssp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/tv_privacy"
+             />
+
+        <TextView
+            android:id="@+id/tv_privacy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_16sdp"
+            android:text="Privacy policy"
+            android:visibility="gone"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_14ssp"
+            android:padding="4dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

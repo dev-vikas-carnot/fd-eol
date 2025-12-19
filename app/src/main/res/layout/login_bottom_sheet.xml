@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_24sdp"
+            android:text="Enter Passcode"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_16ssp"
+            android:padding="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/iv_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_4sdp"
+            android:padding="@dimen/_8sdp"
+            android:visibility="visible"
+            app:tint="@color/colorPrimaryDark"
+            android:src="@drawable/create"
+            app:layout_constraintEnd_toStartOf="@id/tv_username"
+            app:layout_constraintTop_toBottomOf="@id/tv_title" />
+
+        <TextView
+            android:id="@+id/tv_username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_16ssp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/iv_edit"
+            app:layout_constraintEnd_toEndOf="@id/tv_title"
+            app:layout_constraintStart_toStartOf="@id/tv_title"
+            android:padding="4dp"
+            app:layout_constraintTop_toTopOf="@id/iv_edit"
+            tools:text="908768998" />
+
+        <com.chaos.view.PinView
+            android:id="@+id/pinView"
+            style="@style/PinWidget.PinView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_8sdp"
+            android:cursorVisible="true"
+            android:inputType="number"
+            android:itemBackground="@color/light_violet"
+            android:padding="@dimen/_8sdp"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_18ssp"
+            app:cursorColor="@color/colorPrimary"
+            app:cursorWidth="@dimen/_2sdp"
+            app:hideLineWhenFilled="false"
+            app:itemCount="4"
+            app:itemHeight="@dimen/_40sdp"
+            app:itemRadius="@dimen/_4sdp"
+            app:itemSpacing="@dimen/_8sdp"
+            app:itemWidth="@dimen/_40sdp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_username"
+            app:lineColor="@color/text"
+            app:lineWidth="@dimen/_2sdp"
+            app:viewType="rectangle" />
+
+        <TextView
+            android:id="@+id/tv_not_receive_otp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/_8sdp"
+            android:text="@string/code_not_received"
+            android:padding="4dp"
+            android:visibility="gone"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/pinView" />
+
+        <LinearLayout
+            android:id="@+id/ll_retry"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:gravity="center_horizontal"
+            app:layout_constraintTop_toBottomOf="@+id/tv_not_receive_otp">
+
+
+            <TextView
+                android:id="@+id/resend_otp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal"
+                android:text="@string/retry"
+                android:padding="4dp"
+
+                android:textColor="@color/colorPrimary"
+                app:layout_constraintEnd_toStartOf="@id/timer" />
+
+            <TextView
+                android:id="@+id/timer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginStart="@dimen/_4sdp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:padding="4dp"
+
+                android:visibility="gone"
+                tools:text=" 00:30 sec"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_submit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_12sdp"
+            android:layout_marginRight="@dimen/_12sdp"
+            android:layout_marginLeft="@dimen/_12sdp"
+            android:padding="@dimen/_15sdp"
+            android:text="@string/submit"
+            android:enabled="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ll_retry" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

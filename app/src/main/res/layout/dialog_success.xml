@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/dialog_background"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Close Button at the Top Right -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:id="@+id/closeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:background="?attr/selectableItemBackground"
+            android:src="@drawable/ic_close" />
+    </RelativeLayout>
+
+    <!-- Icon in the Center -->
+    <ImageView
+        android:id="@+id/dialogIcon"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:src="@drawable/baseline_check_circle_outline_24"
+        />
+    <TextView
+        android:id="@+id/dialogTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"
+        android:textStyle="bold"
+        android:text="Your message goes here"
+        android:textColor="@color/black" />
+
+
+
+    <!-- Message Below the Icon -->
+    <TextView
+        android:id="@+id/dialogMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        android:text="Your message goes here"
+        android:textColor="@color/black" />
+
+    <Button
+        android:visibility="gone"
+        android:layout_marginTop="12dp"
+        android:id="@+id/btnTestZebraPrinter"
+        style="@style/CustomButton"
+        android:text="Print" />
+
+</LinearLayout>
