@@ -133,8 +133,7 @@ interface ApiService {
                     if (
                         response.code != 401 ||
                         alreadyRetried ||
-                        path.startsWith("/api/v2/login") ||
-                        path.startsWith("/fd/device_installation_status/")
+                        path.startsWith("/api/v2/login")
                     ) {
                         return@addInterceptor response
                     }
@@ -151,7 +150,7 @@ interface ApiService {
 
                     val newRequest = request.newBuilder()
                         .removeHeader("Authorization")
-                        .header("Authorization", "Bearer $newToken")
+                        .header("Authorization", "$newToken")
                         .header(RETRY_HEADER, "true")
                         .build()
 

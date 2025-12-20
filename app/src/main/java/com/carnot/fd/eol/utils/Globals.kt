@@ -145,52 +145,52 @@ object Globals {
 
     fun isVinValidString(input: String): Boolean {
 
-        val vinPatternNew = Regex("^MBNC[A-Z]49S[A-Z][A-Z]{3}[0-9]{5}\$")
-        if (vinPatternNew.matches(input))
-            return true
+//        val vinPatternNew = Regex("^MBNC[A-Z]49S[A-Z][A-Z]{3}[0-9]{5}\$")
+//        if (vinPatternNew.matches(input))
+//            return true
 
         // Check if the length is 16 or 17
         if (input.length != 16 && input.length != 17) {
             return false
         }
 
-        // Check if the first three characters are "MBN"
-        if (!input.startsWith("MBN")) {
-            return false
-        }
-
-        // Extract the 4th and 5th characters
-        val substring =input.substring(3, 5)  // 4th and 5th characters
-
-        // Check if the substring matches one of the allowed values
-        val allowedValues = setOf("AV", "BU", "LW", "BG", "BN", "BS")
-        if(substring !in allowedValues){
-
-            if (input[3] != 'N' || !input[4].isLetter() || !input[4].isUpperCase()) {
-                return false
-            }
-            // Check if the 4th character is 'N'
-       }
-
-        // Check if the first five characters are alphabetic (A-Z) and uppercase
-        if (!input.substring(0, 5).all { it.isLetter() && it.isUpperCase() }) {
-            return false
-        }
-
-        // Check if the 6th and 7th characters are digits (0-9)
-        if (!input.substring(5, 7).all { it.isDigit() }) {
-            return false
-        }
-
-        // Check if the 8th character is 'S'
-        if (input[7] != 'S') {
-            return false
-        }
-
-        // Check if the 9th character is an uppercase letter (A-Z)
-        if (!input[8].isLetter() || !input[8].isUpperCase()) {
-            return false
-        }
+//        // Check if the first three characters are "MBN"
+//        if (!input.startsWith("MBN")) {
+//            return false
+//        }
+//
+//        // Extract the 4th and 5th characters
+//        val substring =input.substring(3, 5)  // 4th and 5th characters
+//
+//        // Check if the substring matches one of the allowed values
+//        val allowedValues = setOf("AV", "BU", "LW", "BG", "BN", "BS")
+//        if(substring !in allowedValues){
+//
+//            if (input[3] != 'N' || !input[4].isLetter() || !input[4].isUpperCase()) {
+//                return false
+//            }
+//            // Check if the 4th character is 'N'
+//       }
+//
+//        // Check if the first five characters are alphabetic (A-Z) and uppercase
+//        if (!input.substring(0, 5).all { it.isLetter() && it.isUpperCase() }) {
+//            return false
+//        }
+//
+//        // Check if the 6th and 7th characters are digits (0-9)
+//        if (!input.substring(5, 7).all { it.isDigit() }) {
+//            return false
+//        }
+//
+//        // Check if the 8th character is 'S'
+//        if (input[7] != 'S') {
+//            return false
+//        }
+//
+//        // Check if the 9th character is an uppercase letter (A-Z)
+//        if (!input[8].isLetter() || !input[8].isUpperCase()) {
+//            return false
+//        }
 
         // All checks passed
         return true
