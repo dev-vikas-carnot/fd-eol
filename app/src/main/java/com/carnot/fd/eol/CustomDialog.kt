@@ -1,6 +1,7 @@
 package com.carnot.fd.eol
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.Dialog
 import android.opengl.Visibility
 import android.view.LayoutInflater
@@ -51,6 +52,31 @@ class CustomDialog(private val activity: Activity) {
         dialog.setContentView(view)
         dialog.setCancelable(isCancellable)
         dialog.show()
+    }
+
+    fun showTwoAction(
+        icon: Int,
+        title: String,
+        message: String,
+        positiveText: String,
+        negativeText: String,
+        onPositiveClick: () -> Unit,
+        onNegativeClick: () -> Unit
+    ) {
+        AlertDialog.Builder(activity)
+            .setIcon(icon)
+            .setTitle(title)
+            .setMessage(message)
+            .setCancelable(false)
+            .setPositiveButton(positiveText) { dialog, _ ->
+                dialog.dismiss()
+                onPositiveClick()
+            }
+            .setNegativeButton(negativeText) { dialog, _ ->
+                dialog.dismiss()
+                onNegativeClick()
+            }
+            .show()
     }
 
     fun dismiss() {

@@ -5,7 +5,6 @@ import android.os.Build
 import com.carnot.fd.eol.BuildConfig
 import com.carnot.fd.eol.data.*
 import com.carnot.fd.eol.features.login.data.request.LoginAPIRequest
-import com.carnot.fd.eol.features.login.data.request.VerifyOTPAPIRequest
 import com.carnot.fd.eol.features.login.data.response.OTPResponse
 import com.carnot.fd.eol.features.printer.data.request.PostInstallationPrintRequest
 import com.carnot.fd.eol.features.printer.data.response.PostInstallationPrintResponse
@@ -29,38 +28,25 @@ import java.util.concurrent.TimeUnit
 
 interface ApiService {
 
-    @POST("/amk/login_otp/")
-    suspend fun loginAPICall(@Body request: LoginAPIRequest): Response<BaseResponse<JsonObject>>
-
-    @POST("/amk/login_verify/")
+    @POST("/fd/eol_login/")
     suspend fun loginVerifyAPICall(
-        @Body request: VerifyOTPAPIRequest
+        @Body request: LoginAPIRequest
     ): Response<BaseResponse<OTPResponse>>
 
     @POST("/amk/sd_device_creation/")
-    suspend fun createDevice(
-        @Body request: CreateDeviceRequest
-    ): BaseResponse<CreateDeviceResponse>
+    suspend fun createDevice(@Body request: CreateDeviceRequest): BaseResponse<CreateDeviceResponse>
 
-    @POST("/amk/sd_device_installation_status/")
-    suspend fun getDeviceStatus(
-        @Body request: DeviceStatusRequest
-    ): BaseResponse<DeviceStatusResponse>
+    @POST("/fd/device_installation_status/")
+    suspend fun getDeviceStatus(@Body request: DeviceStatusRequest): BaseResponse<DeviceStatusResponse>
 
     @POST("/amk/sd_device_post_installation_test/")
-    suspend fun postInstallationTest(
-        @Body request: PostInstallationTestRequest
-    ): BaseResponse<PostInstallationTestResponse>
+    suspend fun postInstallationTest(@Body request: PostInstallationTestRequest): BaseResponse<PostInstallationTestResponse>
 
     @POST("/amk/sd_device_post_installation_status_print/")
-    suspend fun postInstallationPrint(
-        @Body request: PostInstallationPrintRequest
-    ): BaseResponse<PostInstallationPrintResponse>
+    suspend fun postInstallationPrint(@Body request: PostInstallationPrintRequest): BaseResponse<PostInstallationPrintResponse>
 
     @POST("/user-service/v1/vehiclemapping")
-    suspend fun eolVehicleMapping(
-        @Body request: VehicleMappingRequest
-    ): BaseResponse<JsonObject>
+    suspend fun eolVehicleMapping(@Body request: VehicleMappingRequest): retrofit2.Response<BaseResponse<JsonObject>>
 
     companion object {
 
@@ -76,12 +62,7 @@ interface ApiService {
             }
 
             val chuckerInterceptor = ChuckerInterceptor.Builder(application)
-                .collector(
-                    ChuckerCollector(
-                        application,
-                        showNotification = BuildConfig.DEBUG
-                    )
-                )
+                .collector(ChuckerCollector(application, showNotification = BuildConfig.DEBUG))
                 .maxContentLength(250_000L)
                 .alwaysReadResponseBody(true)
                 .build()
@@ -91,7 +72,6 @@ interface ApiService {
                 .connectTimeout(5, TimeUnit.MINUTES)
                 .readTimeout(5, TimeUnit.MINUTES)
 
-                // Debug tools
                 .apply {
                     if (BuildConfig.DEBUG) {
                         addInterceptor(chuckerInterceptor)
@@ -99,11 +79,28 @@ interface ApiService {
                     }
                 }
 
-                // Common headers
+                /* ---------------- COMMON HEADERS ---------------- */
                 .addInterceptor { chain ->
                     val original = chain.request()
                     val path = original.url.encodedPath
+                    val token = Globals.getEolAccessToken(application)
 
+                    // 🚨 SPECIAL CASE: device_installation_status
+                    if (path.startsWith("/fd/device_installation_status/")) {
+
+                        val specialRequest = original.newBuilder()
+                            .headers(okhttp3.Headers.Builder().build()) // ❌ remove ALL headers
+                            .header("Authorization", token ?: "")
+                            .header(
+                                "X-DreamFactory-API-Key",
+                                Constants.DREAMFACTORY_API_KEY
+                            )
+                            .build()
+
+                        return@addInterceptor chain.proceed(specialRequest)
+                    }
+
+                    // ✅ NORMAL FLOW FOR ALL OTHER APIs
                     val builder = original.newBuilder()
                         .header("app-build", BuildConfig.BUILD_TYPE)
                         .header("app-version", BuildConfig.VERSION_NAME)
@@ -118,46 +115,39 @@ interface ApiService {
                         .header("platform", Constants.ANDROID)
                         .header("X-DreamFactory-API-Key", Constants.DREAMFACTORY_API_KEY)
 
-                    // Attach JWT except login API
                     if (!path.startsWith("/api/v2/login")) {
-                        Globals.getJWTAccessToken(application)?.let {
-                            builder.header("Authorization", "Bearer $it")
-                        }
+                        token?.let { builder.header("Authorization", it) }
                     }
 
                     chain.proceed(builder.build())
                 }
 
-                // JWT refresh interceptor
+                /* ---------------- TOKEN REFRESH ---------------- */
                 .addInterceptor { chain ->
                     val request = chain.request()
                     val path = request.url.encodedPath
-
-                    // Never refresh for login
-                    if (path.startsWith("/api/v2/login")) {
-                        return@addInterceptor chain.proceed(request)
-                    }
-
-                    val response = chain.proceed(request)
                     val alreadyRetried = request.header(RETRY_HEADER) == "true"
 
-                    if (response.code != 401 || alreadyRetried) {
+                    val response = chain.proceed(request)
+
+                    if (
+                        response.code != 401 ||
+                        alreadyRetried ||
+                        path.startsWith("/api/v2/login") ||
+                        path.startsWith("/fd/device_installation_status/")
+                    ) {
                         return@addInterceptor response
                     }
 
                     response.close()
-                    Timber.w("401 received → refreshing token")
 
                     val newToken = runBlocking {
                         refreshJwtToken(application)
                     }
 
-                    if (newToken.isNullOrEmpty()) {
-                        Timber.e("Token refresh failed")
-                        return@addInterceptor response
-                    }
+                    if (newToken.isNullOrEmpty()) return@addInterceptor response
 
-                    Globals.setJWTAccessToken(application, newToken)
+                    Globals.setEolAccessToken(application, newToken)
 
                     val newRequest = request.newBuilder()
                         .removeHeader("Authorization")
@@ -170,6 +160,7 @@ interface ApiService {
                 .build()
         }
 
+        /* ---------------- JWT REFRESH USING /api/v2/login ---------------- */
         private suspend fun refreshJwtToken(application: Application): String? {
             return try {
                 val service = VehicleEolLoginService.create(application)
@@ -182,28 +173,20 @@ interface ApiService {
                 }
 
                 val response = service.vehicleEolLogin(body)
-                if (!response.isSuccessful) return null
-
-                val json = response.body()
-                when {
-                    json?.has("accessToken") == true -> json.get("accessToken").asString
-                    json?.has("token") == true -> json.get("token").asString
-                    json?.has("jwtToken") == true -> json.get("jwtToken").asString
-                    else -> null
-                }
+                if (!response.isSuccessful) null
+                else response.body()?.get("token")?.asString
             } catch (e: Exception) {
-                Timber.e(e, "Token refresh error")
+                Timber.e(e)
                 null
             }
         }
 
-        fun create(application: Application): ApiService {
-            return Retrofit.Builder()
+        fun create(application: Application): ApiService =
+            Retrofit.Builder()
                 .baseUrl(BuildConfig.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(createAuthorizedClient(application))
                 .build()
                 .create(ApiService::class.java)
-        }
     }
 }

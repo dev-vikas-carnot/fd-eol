@@ -1,4 +1,4 @@
-package com.carnot.fd.eol
+package com.carnot.fd.eol.features.vehicle_mapping
 
 import android.app.Application
 import android.os.Bundle
@@ -13,9 +13,7 @@ import com.carnot.fd.eol.data.EolUiState
 import com.carnot.fd.eol.data.VehicleMappingData
 import com.carnot.fd.eol.data.VehicleMappingRequest
 import com.carnot.fd.eol.firebase.AnalyticsEvents.API_SD_DEVICE_INSTALLATION_STATUS
-import com.carnot.fd.eol.firebase.AnalyticsEvents.API_SD_DEVICE_POST_INSTALLATION_TEST
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_EOL_API_CALLED
-import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_EOL_API_SUCCESS
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_FLAGS_API_CALLED
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_FLAGS_API_SUCCESS
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_QR_VALIDATION_FAILED
@@ -30,7 +28,7 @@ import com.carnot.fd.eol.network.ApiResponse
 import com.carnot.fd.eol.network.ApiService
 import com.carnot.fd.eol.utils.Constants
 import com.carnot.fd.eol.utils.Globals
-import com.carnot.fd.eol.utils.PrinterPrefs
+import com.carnot.fd.eol.utils.PreferenceUtil
 import com.carnot.fd.eol.utils.apiCall
 import com.carnot.fd.eol.utils.logMessage
 import com.google.gson.JsonObject
@@ -40,7 +38,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class EndOfLineTestingViewModel(val applicationContext: Application): AndroidViewModel(applicationContext) {
+class EndOfLineTestingViewModel(val applicationContext: Application) :
+    AndroidViewModel(applicationContext) {
 
     private val apiService: ApiService = ApiService.create(applicationContext)
 
@@ -89,6 +88,15 @@ class EndOfLineTestingViewModel(val applicationContext: Application): AndroidVie
     private val _apiResponseSubmit = MutableLiveData<ApiResponse<JsonObject?>>()
 
     var activationId = 0
+
+    // --- Tractor Selection ---
+    private var tractorSeries: String? = null
+    private var tractorModel: String? = null
+
+    fun setTractorSelection(series: String?, model: String?) {
+        tractorSeries = series
+        tractorModel = model
+    }
 
     // === VALIDATION FUNCTIONS ===
     /**
@@ -211,6 +219,13 @@ class EndOfLineTestingViewModel(val applicationContext: Application): AndroidVie
         // Only allow submit if in SubmitReady state
         if (_uiState.value != EolUiState.SubmitReady) return
 
+        // 🚨 Tractor selection validation
+        if (tractorSeries.isNullOrBlank() || tractorModel.isNullOrBlank()) {
+            _apiResponseSubmit.value =
+                ApiResponse.Error("Please select Tractor Type and Model")
+            return
+        }
+
         // Final validation before submission
         if (!isVinValid(_vin.value)) {
             _apiResponseSubmit.value = ApiResponse.Error("Invalid VIN")
@@ -247,9 +262,9 @@ class EndOfLineTestingViewModel(val applicationContext: Application): AndroidVie
                             VehicleMappingData(
                                 vin = vin,
                                 IMEI = imei,
-                                vehicleType = "Tractor",
-                                vehicleModel = "Standard",
-                                vehiclePlantID = Globals.getPlantKeyByIp(Globals.getPlantIp()),
+                                vehicleType = tractorSeries ?: "UNKNOWN",
+                                vehicleModel = tractorModel ?: "UNKNOWN",
+                                vehiclePlantID = PreferenceUtil.vehiclePlantId,
                                 vehicleCategory = "FD_DOM",
                                 vehicleEOLStatus = true,
                                 vehicleEOLDateTime = now,
@@ -269,17 +284,30 @@ class EndOfLineTestingViewModel(val applicationContext: Application): AndroidVie
                     val response = apiService.eolVehicleMapping(request)
 
                     withContext(Dispatchers.Main) {
-                        if (response.status) {
-                            _apiResponseSubmit.value = ApiResponse.Success(
-                                response.data,
-                                response.message ?: "Vehicle mapping successful"
-                            )
-                            applicationContext.logMessage("EOL Vehicle Mapping Success")
+                        if (response.isSuccessful) {
+                            val body = response.body()
+
+                            if (body?.status == true) {
+                                _apiResponseSubmit.value = ApiResponse.Success(
+                                    body.data,
+                                    body.message ?: "Vehicle mapping successful"
+                                )
+                                applicationContext.logMessage("EOL Vehicle Mapping Success")
+                            } else {
+                                _apiResponseSubmit.value = ApiResponse.Error(
+                                    body?.message ?: "Vehicle mapping failed"
+                                )
+                            }
+
                         } else {
-                            _apiResponseSubmit.value = ApiResponse.Error(
-                                response.message ?: "Vehicle mapping failed"
-                            )
-                            applicationContext.logMessage("EOL Vehicle Mapping Failed: ${response.message}")
+                            // 🔥 HTTP 400 / 422 / 500
+                            val errorMsg = response.errorBody()
+                                ?.string()
+                                ?.let { parseErrorMessage(it) }
+                                ?: "Invalid request"
+
+                            _apiResponseSubmit.value = ApiResponse.Error(errorMsg)
+                            applicationContext.logMessage("EOL Vehicle Mapping Failed: $errorMsg")
                         }
                     }
                 },
@@ -297,6 +325,14 @@ class EndOfLineTestingViewModel(val applicationContext: Application): AndroidVie
         }
     }
 
+    private fun parseErrorMessage(errorJson: String): String {
+        return try {
+            val json = org.json.JSONObject(errorJson)
+            json.optString("message", "Something went wrong")
+        } catch (e: Exception) {
+            "Something went wrong"
+        }
+    }
 
     // === RETRY LOGIC ===
     fun onRetry() {
@@ -385,19 +421,26 @@ class EndOfLineTestingViewModel(val applicationContext: Application): AndroidVie
 
             apiCall(
                 execute = {
+//                    val request = DeviceStatusRequest("860738072441508")
                     val request = DeviceStatusRequest(imei = _imei.value.toString())
 
-                val requestBundle = Bundle().apply {
-                    putString("imei", request.imei)
-                }
-                FirebaseAnalyticsEvents.logApiCall(API_SD_DEVICE_INSTALLATION_STATUS, requestBundle)
+                    val requestBundle = Bundle().apply {
+                        putString("imei", request.imei)
+                    }
+                    FirebaseAnalyticsEvents.logApiCall(
+                        API_SD_DEVICE_INSTALLATION_STATUS,
+                        requestBundle
+                    )
 
-                val response = apiService.getDeviceStatus(request)
-                applicationContext.logMessage("Get Device Status Api Response Received")
+                    val response = apiService.getDeviceStatus(request)
+                    applicationContext.logMessage("Get Device Status Api Response Received")
 
                     withContext(Dispatchers.Main) {
                         if (response.status) {
-                            FirebaseAnalyticsEvents.logApiResponse(API_SD_DEVICE_INSTALLATION_STATUS, "Success")
+                            FirebaseAnalyticsEvents.logApiResponse(
+                                API_SD_DEVICE_INSTALLATION_STATUS,
+                                "Success"
+                            )
 
                             _apiResponseStatus.value = ApiResponse.Success(response.data)
                             _gpsLockStatus.value = response.data!!.gps
@@ -413,8 +456,16 @@ class EndOfLineTestingViewModel(val applicationContext: Application): AndroidVie
                                 putString("battery", response.data!!.battery.toString())
                                 putString("activationId", response.data!!.activation_id.toString())
                             }
-                            FirebaseAnalyticsEvents.logEvent(EVENT_FLAGS_API_SUCCESS, SCREEN_EOL, successBundle)
-                            FirebaseAnalyticsEvents.logEvent(EVENT_Step2_EOL, SCREEN_EOL, successBundle)
+                            FirebaseAnalyticsEvents.logEvent(
+                                EVENT_FLAGS_API_SUCCESS,
+                                SCREEN_EOL,
+                                successBundle
+                            )
+                            FirebaseAnalyticsEvents.logEvent(
+                                EVENT_Step2_EOL,
+                                SCREEN_EOL,
+                                successBundle
+                            )
 
                             // Check if all flags passed
                             if (_gpsLockStatus.value == true &&
@@ -452,13 +503,21 @@ class EndOfLineTestingViewModel(val applicationContext: Application): AndroidVie
                     }
                 },
                 onException = {
-                    FirebaseAnalyticsEvents.logError(API_SD_DEVICE_INSTALLATION_STATUS, it, "Network failure")
+                    FirebaseAnalyticsEvents.logError(
+                        API_SD_DEVICE_INSTALLATION_STATUS,
+                        it,
+                        "Network failure"
+                    )
                     _uiState.postValue(EolUiState.ImeiInput)
                     _imei.postValue("")
                     _retryTime.postValue("0")
                     timeLeft = 0
                     refreshCounter = 0
-                    _apiResponseStatus.postValue(ApiResponse.Error(it.message ?: "Something Went Wrong"))
+                    _apiResponseStatus.postValue(
+                        ApiResponse.Error(
+                            it.message ?: "Something Went Wrong"
+                        )
+                    )
                     applicationContext.logMessage("Get Device Status Api Exception : ${it.message}")
                 },
                 onNoInternet = {

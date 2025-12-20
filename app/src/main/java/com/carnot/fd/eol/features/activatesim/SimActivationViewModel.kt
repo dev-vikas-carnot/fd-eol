@@ -51,9 +51,6 @@ class SimActivationViewModel(
         }
     }
 
-    private fun checkSubmitEnabled() {
-    }
-
     private fun isImeiValid(imei: String?): Boolean {
         if (imei.isNullOrBlank()) return false
         // Reuse simple validation pattern from LinkDeviceAndTractor: length == 15

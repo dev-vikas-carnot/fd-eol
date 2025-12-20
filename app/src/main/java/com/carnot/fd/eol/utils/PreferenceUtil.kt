@@ -59,6 +59,10 @@ object PreferenceUtil {
         set(value) = sharedPreferences.set(Constants.PREFERENCE_USER_NAME, value)
         get() = sharedPreferences[Constants.PREFERENCE_USER_NAME, ""]
 
+    var vehiclePlantId
+        set(value) = sharedPreferences.set(Constants.PREFERENCE_PLANT_ID, value)
+        get() = sharedPreferences[Constants.PREFERENCE_PLANT_ID, ""]
+
     var isUserLoggedIn
         set(value) = sharedPreferences.set(Constants.PREFERENCE_USER_LOGGEDIN, value)
         get() = sharedPreferences[Constants.PREFERENCE_USER_LOGGEDIN, false]

@@ -56,15 +56,9 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:screenOrientation="portrait"></activity>
         <activity
-            android:name=".EndOfLineTestingActivity"
+            android:name=".features.vehicle_mapping.ui.EndOfLineTestingActivity"
             android:screenOrientation="portrait" />
         <activity
             android:name=".features.faq.ui.FAQActivity"
@@ -74,11 +68,11 @@
             android:exported="true"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".features.printer.ReprintActivity"

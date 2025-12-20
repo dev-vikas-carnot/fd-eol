@@ -211,7 +211,6 @@ class LoginActivity : AppCompatActivity() {
                     FirebaseAnalyticsEvents.logEvent(EVENT_OTP_API_FAILURE,SCREEN_LOGIN_OTP,bundle)
 
                     progressSnackbar?.dismiss()
-                    startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                 }
 
                 is NetworkResult.Success -> {
@@ -227,9 +226,12 @@ class LoginActivity : AppCompatActivity() {
                     progressSnackbar?.dismiss()
                     PreferenceUtil.isUserLoggedIn = true
                     PreferenceUtil.userName = viewModel.userName ?: ""
-                    PreferenceUtil.userId = it.data?.id?.toString() ?: ""
-                    Globals.setJWTAccessToken(this,it.data?.authTokens?.accessToken.toString())
-                    Globals.setJWTRefreshToken(this,it.data?.authTokens?.refreshToken.toString())
+                    PreferenceUtil.userId = it.data?.userId?.toString() ?: ""
+                    PreferenceUtil.userName = it.data?.name ?: ""
+                    PreferenceUtil.vehiclePlantId = it.data?.vehiclePlantId?: ""
+
+                    Globals.setEolAccessToken(this,it.data?.authTokens?.accessToken.toString())
+                    Globals.setEolRefreshToken(this,it.data?.authTokens?.refreshToken.toString())
                     startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                     finish()
                 }
@@ -257,7 +259,7 @@ class LoginActivity : AppCompatActivity() {
     private fun resendOTP(view: TextView) {
         if (view.isEnabled) {
             view.isEnabled = false
-            viewModel.login()
+            viewModel.verifyLogin()
             viewModel.displayTimer(baseTime)
             view.setText(R.string.retry)
         }
@@ -305,7 +307,7 @@ class LoginActivity : AppCompatActivity() {
             FirebaseAnalyticsEvents.logEvent(EVENT_OTP_ENTERED,SCREEN_LOGIN_OTP,bundle)
 
 
-            viewModel.verifyOTP()
+            viewModel.verifyLogin()
         }
 
         viewModel.getTimerResponse.observe(

@@ -10,7 +10,7 @@
 
         <variable
             name="viewModel"
-            type="com.carnot.fd.eol.EndOfLineTestingViewModel" />
+            type="com.carnot.fd.eol.features.vehicle_mapping.EndOfLineTestingViewModel" />
     </data>
 
     <!-- ROOT -->
@@ -289,7 +289,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="@dimen/_10sdp"
                     android:orientation="horizontal"
                     android:visibility="@{(viewModel.uiState instanceof EolUiState.VinInputEnabled || viewModel.uiState instanceof EolUiState.SubmitReady || viewModel.uiState instanceof EolUiState.Submitted) ? View.VISIBLE : View.GONE}"
                     android:weightSum="1">
@@ -300,15 +300,56 @@
                         android:layout_weight="0.7"
                         android:orientation="vertical">
 
+                        <!-- Tractor Type -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tractor Type"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvTractorType"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_edittext"
+                            android:gravity="center_vertical"
+                            android:padding="12dp"
+                            android:text="Select Tractor Type"
+                            />
+
+                        <!-- Spacer -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="8dp" />
+
+                        <!-- Tractor Model -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tractor Model"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvTractorModel"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_edittext"
+                            android:gravity="center_vertical"
+                            android:padding="12dp"
+                            android:text="Select Tractor Model"
+                           />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Step 3"
+                            android:layout_marginTop="@dimen/_12sdp"
                             android:textSize="16sp" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/_5sdp"
                             android:text="Scan Chassis Number (VIN)"
                             android:textColor="@{viewModel.uiState instanceof EolUiState.SubmitReady ? @color/colorPrimary : @color/black}"
                             android:textSize="18sp" />
@@ -354,6 +395,7 @@
                         android:backgroundTint="@color/colorPrimary"
                         android:drawableRight="@drawable/baseline_qr_code_scanner_24"
                         android:drawableTint="@color/white"
+                        android:layout_marginTop="@dimen/_120sdp"
                         android:text="SCAN"
                         android:textColor="@color/white"
                         android:visibility="@{(viewModel.uiState instanceof EolUiState.VinInputEnabled || viewModel.uiState instanceof EolUiState.SubmitReady) ? View.VISIBLE : View.GONE}" />
@@ -361,6 +403,7 @@
                     <ImageView
                         android:layout_width="50dp"
                         android:layout_height="50dp"
+                        android:layout_marginTop="@dimen/_120sdp"
                         android:src="@drawable/baseline_check_circle_outline_24"
                         android:visibility="@{viewModel.uiState instanceof EolUiState.SubmitReady ? View.VISIBLE : View.GONE}"
                         app:tint="@color/green" />

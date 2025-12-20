@@ -6,7 +6,6 @@ object AnalyticsEvents {
     const val SCREEN_HOME = "MainActivity"
     const val SCREEN_LOGIN_OTP = "LoginOTPScreen"
     const val SCREEN_LOGIN = "LoginScreen"
-    const val SCREEN_LINKDEVICETRACTOR = "LinkDeviceAndTractorScreen"
     const val SCREEN_EOL = "EOLScreen"
     const val SCREEN_REPRINT = "ReprintScreen"
     const val SCREEN_staTus = "VerifyStatusScreen"

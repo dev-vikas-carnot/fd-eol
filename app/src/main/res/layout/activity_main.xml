@@ -58,20 +58,21 @@
                 <Button
                     android:id="@+id/btnVerifyStatus"
                     style="@style/CustomButton"
+                    android:visibility="gone"
                     android:layout_marginTop="12dp"
                     android:text="Verify EOL Status" />
-
-                <Button
-                    android:id="@+id/btnTestZebraPrinter"
-                    style="@style/CustomButton"
-                    android:layout_marginTop="12dp"
-                    android:text="Test Printer" />
 
                 <Button
                     android:id="@+id/btnRePrint"
                     style="@style/CustomButton"
                     android:layout_marginTop="12dp"
                     android:text="Re-Print" />
+
+                <Button
+                    android:id="@+id/btnTestZebraPrinter"
+                    style="@style/CustomButton"
+                    android:layout_marginTop="12dp"
+                    android:text="Test Printer" />
 
                 <Button
                     android:id="@+id/shareLog"

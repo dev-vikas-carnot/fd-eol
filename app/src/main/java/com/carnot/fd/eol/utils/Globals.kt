@@ -98,6 +98,51 @@ object Globals {
         editor.apply()
     }
 
+
+    private const val KEY_EO_ACCESS_TOKEN = "fd_eol_access_token"
+    private const val KEY_EO_REFRESH_TOKEN = "fd_eol_refresh_token"
+
+    @JvmStatic
+    fun getEolAccessToken(context: Context): String? =
+        context.getSharedPreferences(
+            Constants.COM_CARNOT_KRISHI_FIELD_USER_DETAILS,
+            Context.MODE_PRIVATE
+        ).getString(KEY_EO_ACCESS_TOKEN, null)
+
+    @JvmStatic
+    fun setEolAccessToken(context: Context, token: String?) {
+        context.getSharedPreferences(
+            Constants.COM_CARNOT_KRISHI_FIELD_USER_DETAILS,
+            Context.MODE_PRIVATE
+        ).edit().putString(KEY_EO_ACCESS_TOKEN, token).apply()
+    }
+
+    @JvmStatic
+    fun getEolRefreshToken(context: Context): String? =
+        context.getSharedPreferences(
+            Constants.COM_CARNOT_KRISHI_FIELD_USER_DETAILS,
+            Context.MODE_PRIVATE
+        ).getString(KEY_EO_REFRESH_TOKEN, null)
+
+    @JvmStatic
+    fun setEolRefreshToken(context: Context, token: String?) {
+        context.getSharedPreferences(
+            Constants.COM_CARNOT_KRISHI_FIELD_USER_DETAILS,
+            Context.MODE_PRIVATE
+        ).edit().putString(KEY_EO_REFRESH_TOKEN, token).apply()
+    }
+
+    @JvmStatic
+    fun clearEolTokens(context: Context) {
+        context.getSharedPreferences(
+            Constants.COM_CARNOT_KRISHI_FIELD_USER_DETAILS,
+            Context.MODE_PRIVATE
+        ).edit()
+            .remove(KEY_EO_ACCESS_TOKEN)
+            .remove(KEY_EO_REFRESH_TOKEN)
+            .apply()
+    }
+
     fun isVinValidString(input: String): Boolean {
 
         val vinPatternNew = Regex("^MBNC[A-Z]49S[A-Z][A-Z]{3}[0-9]{5}\$")

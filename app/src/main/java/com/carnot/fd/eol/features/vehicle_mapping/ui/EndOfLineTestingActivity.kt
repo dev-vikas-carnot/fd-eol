@@ -1,4 +1,4 @@
-package com.carnot.fd.eol
+package com.carnot.fd.eol.features.vehicle_mapping.ui
 
 import android.content.Context
 import android.content.Intent
@@ -7,6 +7,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -27,9 +28,7 @@ import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_PRINT_BUTTON_CLICKED
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_SCAN_IMEI2_CANCELLED
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_SCAN_IMEI2_CLICKED
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_SCAN_IMEI2_FAILURE
-import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_SCAN_VIN2_CANCELLED
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_SCAN_VIN2_CLICKED
-import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_SCAN_VIN2_FAILURE
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_Step1_EOL
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_Submit_EOL
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_API
@@ -54,6 +53,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
+import androidx.appcompat.app.AlertDialog
+import com.carnot.fd.eol.CustomDialog
+import com.carnot.fd.eol.LoadingDialog
+import com.carnot.fd.eol.R
+import com.carnot.fd.eol.features.vehicle_mapping.domain.TractorMasterCache
+import com.carnot.fd.eol.features.vehicle_mapping.EndOfLineTestingViewModel
+import timber.log.Timber
 
 @AndroidEntryPoint
 class EndOfLineTestingActivity : AppCompatActivity() {
@@ -73,6 +79,8 @@ class EndOfLineTestingActivity : AppCompatActivity() {
     private var imei: String = ""
     private var iccid: String = ""
 
+    private var selectedSeries: String? = null
+    private var selectedModel: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,6 +110,14 @@ class EndOfLineTestingActivity : AppCompatActivity() {
 
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
+
+        findViewById<TextView>(R.id.tvTractorType).setOnClickListener {
+            showTractorTypeDialog()
+        }
+
+        findViewById<TextView>(R.id.tvTractorModel).setOnClickListener {
+            showTractorModelDialog()
+        }
 
         // Enable back button in the Action Bar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -214,15 +230,46 @@ class EndOfLineTestingActivity : AppCompatActivity() {
                             response.message,
                             message = ""
                         )
+                        customDialog.showTwoAction(
+                            icon = R.drawable.baseline_error_outline_24,
+                            title = "EOL already PASSED for this VIN",
+                            message = response.message ?: "Something went wrong",
+                            positiveText = "Retry",
+                            negativeText = "Go Back",
+                            onPositiveClick = {
+                                // Retry → just dismiss dialog
+                                customDialog.dismiss()
+                            },
+                            onNegativeClick = {
+                                // Go back → close this screen
+                                finish()
+                            }
+                        )
                     } else {
-                        customDialog.show(icon = R.drawable.baseline_error_outline_24,
-                            "End Of Line Testing Failed",
-                            message = response.message,
-                            shouldShowPrint = false,
-                            onPrintClicked = {
+//                        customDialog.show(icon = R.drawable.baseline_error_outline_24,
+//                            "End Of Line Testing Failed",
+//                            message = response.message,
+//                            shouldShowPrint = false,
+//                            onPrintClicked = {
+//
+//                                onPrintButtonClick()
+//                            })
 
-                                onPrintButtonClick()
-                            })
+                        customDialog.showTwoAction(
+                            icon = R.drawable.baseline_error_outline_24,
+                            title = "End Of Line Testing Failed",
+                            message = response.message ?: "Something went wrong",
+                            positiveText = "Retry",
+                            negativeText = "Go Back",
+                            onPositiveClick = {
+                                // Retry → just dismiss dialog
+                                customDialog.dismiss()
+                            },
+                            onNegativeClick = {
+                                // Go back → close this screen
+                                finish()
+                            }
+                        )
                     }
                 }
 
@@ -485,4 +532,53 @@ class EndOfLineTestingActivity : AppCompatActivity() {
         scanIntent?.initiateScan()
     }
 
+    private fun showTractorTypeDialog() {
+        val seriesList = TractorMasterCache.get()
+            .map { it.series }
+            .distinct()
+            .sorted()
+        Timber.d("EOL_TRACTOR", "Master list size = ${seriesList.size}")
+
+        AlertDialog.Builder(this)
+            .setTitle("Select Tractor Type")
+            .setItems(seriesList.toTypedArray()) { _, which ->
+                selectedSeries = seriesList[which]
+                selectedModel = null
+
+                findViewById<TextView>(R.id.tvTractorType).text = selectedSeries
+                findViewById<TextView>(R.id.tvTractorModel).text = "Select Tractor Model"
+
+                // 🔥 ADD THIS LINE
+                viewModel.setTractorSelection(null, null)
+            }
+            .show()
+    }
+
+    private fun showTractorModelDialog() {
+        if (selectedSeries == null) {
+            Toast.makeText(this, "Select Tractor Type first", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val modelList = TractorMasterCache.get()
+            .filter { it.series == selectedSeries }
+            .map { it.model }
+            .distinct()
+            .sorted()
+
+        AlertDialog.Builder(this)
+            .setTitle("Select Tractor Model")
+            .setItems(modelList.toTypedArray()) { _, which ->
+                selectedModel = modelList[which]
+                findViewById<TextView>(R.id.tvTractorModel).text = selectedModel
+
+                val series = selectedSeries
+                val model = selectedModel
+
+                if (series != null && model != null) {
+                    viewModel.setTractorSelection(series, model)
+                }
+            }
+            .show()
+    }
 }

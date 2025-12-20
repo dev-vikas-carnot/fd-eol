@@ -37,9 +37,7 @@ class VehicleEolLoginRepository(
 
         // Try common token field names; adjust as needed based on backend response.
         return when {
-            json.has("accessToken") -> json.get("accessToken").asString
             json.has("token") -> json.get("token").asString
-            json.has("jwtToken") -> json.get("jwtToken").asString
             else -> null
         }
     }

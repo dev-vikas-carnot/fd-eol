@@ -8,11 +8,12 @@ object Constants {
      * When true, the EOL Device Status step is simulated on-device (GPS -> GSM -> Battery),
      * without calling backend polling APIs. Flip to false to restore the real polling flow.
      */
-    const val EOL_DUMMY_STATUS_ENABLED: Boolean = true
+    const val EOL_DUMMY_STATUS_ENABLED: Boolean = false
 
     const val PREFERENCE_COM_CARNOT_EOL_APP = "com.carnot.fd.eol.app"
     const val PREFERENCE_MOBILE_NUMBER = "mobile_number"
     const val PREFERENCE_USER_NAME = "user_name"
+    const val PREFERENCE_PLANT_ID = "plant_id"
     const val PREFERENCE_USER_LOGGEDIN = "preference_user_loggedin"
     const val PREFERENCE_SELECTED_LANGUAGE = "preference_language"
     const val PREFERENCE_USER_ID = "preference_user_id"

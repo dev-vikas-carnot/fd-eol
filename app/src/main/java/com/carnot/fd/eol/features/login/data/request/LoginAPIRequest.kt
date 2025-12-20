@@ -4,5 +4,8 @@ import com.google.gson.annotations.SerializedName
 
 data class LoginAPIRequest(
     @SerializedName("user_name")
-    val userName: String?
+    val userName: String?,
+
+    @SerializedName("otp")
+    val otp: String? = null
 )

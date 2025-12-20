@@ -4,9 +4,10 @@ import com.google.gson.annotations.SerializedName
 
 data class OTPResponse(
     @SerializedName("user_id")
-    val id: Int,
+    val userId: Int,
     val name: String,
-    val phone: Long,
+    @SerializedName("vehicle_plant_id")
+    val vehiclePlantId: String?,
     @SerializedName("auth_tokens")
     val authTokens: AuthTokens
 )

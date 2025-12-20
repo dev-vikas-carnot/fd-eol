@@ -4,6 +4,9 @@ import android.app.Application
 import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.HiltAndroidApp
+import timber.log.Timber
+import timber.log.Timber.DebugTree
+
 
 @HiltAndroidApp
 class App: Application() {
@@ -15,6 +18,9 @@ class App: Application() {
 
         // Initialize Firebase Analytics (Ensures PreferenceUtil setup)
         FirebaseAnalyticsEvents.init(applicationContext)
+
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())        }
 
     }
 

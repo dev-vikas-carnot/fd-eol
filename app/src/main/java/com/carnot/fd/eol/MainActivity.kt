@@ -1,5 +1,6 @@
 package com.carnot.fd.eol
 
+import com.carnot.fd.eol.features.vehicle_mapping.domain.TractorMasterRepository
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,8 +11,6 @@ import android.text.SpannableStringBuilder
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,23 +22,22 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
-import com.carnot.fd.eol.data.ViewState
 import com.carnot.fd.eol.databinding.ActivityMainBinding
 import com.carnot.fd.eol.features.activatesim.SimActivationActivity
 import com.carnot.fd.eol.features.faq.ui.FAQActivity
+import com.carnot.fd.eol.features.login.data.VehicleEolLoginRepository
 import com.carnot.fd.eol.features.login.ui.LoginActivity
+import com.carnot.fd.eol.features.printer.PrinterIpDialogFragment
 import com.carnot.fd.eol.features.printer.PrinterViewModel
 import com.carnot.fd.eol.features.printer.ReprintActivity
 import com.carnot.fd.eol.features.statuscheck.StatusCheckActivity
+import com.carnot.fd.eol.features.vehicle_mapping.domain.TractorMasterCache
+import com.carnot.fd.eol.features.vehicle_mapping.ui.EndOfLineTestingActivity
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_END_OF_LINE_TESTING_CLICKED
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_HOME_SCREEN_VIEWED
-import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_LINK_DEVICE_AND_TRACTOR_CLICKED
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_MODULE_ALREADY_INSTALLED
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_MODULE_INSTALLED_SUCCESS
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_MODULE_INSTALL_ERROR
-import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_PRINTER_TEST_FAILURE
-import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_PRINTER_TEST_STARTED
-import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_PRINTER_TEST_SUCCESS
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_REPRINT_CLICKED
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_SHARE_LOG_FILE_CLICKED
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_SHARE_LOG_FILE_DIALOG_SHOWN
@@ -48,26 +46,20 @@ import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_SHARE_LOG_FILE_NOT_FOUND
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_SHARE_LOG_FILE_STARTED
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_SIM_ACTIVATION_CLICKED
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_STATUSCHK_CLICKED
-import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TEST_PRINTER_CLICKED
-import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_API
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_CLICK
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_VIEW
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_USER_LOGOUT
 import com.carnot.fd.eol.firebase.AnalyticsEvents.SCREEN_HOME
 import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents
 import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents.logCrashError
+import com.carnot.fd.eol.utils.Constants
 import com.carnot.fd.eol.utils.Globals
-import com.carnot.fd.eol.utils.Globals.formatPlantKey
 import com.carnot.fd.eol.utils.Globals.getPlantDisplayNameByIp
-import com.carnot.fd.eol.utils.Globals.getPlantKeyByIp
 import com.carnot.fd.eol.utils.LoggerHelper
 import com.carnot.fd.eol.utils.PdfHelper
 import com.carnot.fd.eol.utils.PreferenceUtil
+import com.carnot.fd.eol.utils.ViewUtils
 import com.carnot.fd.eol.utils.apiCall
-import com.carnot.fd.eol.features.login.data.VehicleEolLoginRepository
-import com.carnot.fd.eol.features.printer.PrinterIpDialogFragment
-import com.carnot.fd.eol.utils.Constants
-import com.carnot.fd.eol.utils.PrinterPrefs
 import com.google.android.gms.common.moduleinstall.ModuleInstall
 import com.google.android.gms.common.moduleinstall.ModuleInstallRequest
 import com.google.firebase.ktx.Firebase
@@ -94,16 +86,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var loadingDialog: LoadingDialog
+    private val tractorRepo by lazy {
+        TractorMasterRepository(applicationContext)
+    }
+
+//    private val tractorRepo = com.carnot.fd.eol.features.vehicle_mapping.domain.TractorMasterRepository(application)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        ensureTractorMasterLoaded()
+
         val bundle = Bundle().apply {
             putString("event_type", EVENT_TYPE_VIEW)
         }
-        FirebaseAnalyticsEvents.logEvent(EVENT_HOME_SCREEN_VIEWED,SCREEN_HOME,bundle)
+        FirebaseAnalyticsEvents.logEvent(EVENT_HOME_SCREEN_VIEWED, SCREEN_HOME, bundle)
 
 
         PreferenceUtil.initPreference(this)
@@ -127,11 +126,15 @@ class MainActivity : AppCompatActivity() {
             val bundle = Bundle().apply {
                 putString("event_type", EVENT_TYPE_CLICK)
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_SIM_ACTIVATION_CLICKED,SCREEN_HOME,bundle)
+            FirebaseAnalyticsEvents.logEvent(EVENT_SIM_ACTIVATION_CLICKED, SCREEN_HOME, bundle)
 
             if (checkCameraPermission()) {
-                startActivity(Intent(this,
-                    SimActivationActivity::class.java))
+                startActivity(
+                    Intent(
+                        this,
+                        SimActivationActivity::class.java
+                    )
+                )
             } else {
                 Toast.makeText(this, "Camera permission not provided", Toast.LENGTH_SHORT).show()
             }
@@ -142,10 +145,14 @@ class MainActivity : AppCompatActivity() {
             val bundle = Bundle().apply {
                 putString("event_type", EVENT_TYPE_CLICK)
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_END_OF_LINE_TESTING_CLICKED,SCREEN_HOME,bundle)
+            FirebaseAnalyticsEvents.logEvent(EVENT_END_OF_LINE_TESTING_CLICKED, SCREEN_HOME, bundle)
 
             if (checkCameraPermission()) {
-                startActivity(Intent(this, EndOfLineTestingActivity::class.java))
+                if (!TractorMasterCache.isAvailable()) {
+                    loadTractorMasterAndProceed()
+                } else {
+                    startActivity(Intent(this, EndOfLineTestingActivity::class.java))
+                }
             } else {
                 Toast.makeText(this, "Camera permission not provided", Toast.LENGTH_SHORT).show()
             }
@@ -155,7 +162,7 @@ class MainActivity : AppCompatActivity() {
             val bundle = Bundle().apply {
                 putString("event_type", EVENT_TYPE_CLICK)
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_SHARE_LOG_FILE_CLICKED,SCREEN_HOME,bundle)
+            FirebaseAnalyticsEvents.logEvent(EVENT_SHARE_LOG_FILE_CLICKED, SCREEN_HOME, bundle)
 
             /*
             val pdfFilePath = PdfHelper.createSamplePdf(this,"12230","12","Pass")
@@ -220,23 +227,23 @@ class MainActivity : AppCompatActivity() {
             val bundle = Bundle().apply {
                 putString("event_type", EVENT_TYPE_CLICK)
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_CLICKED,SCREEN_HOME,bundle)
+            FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_CLICKED, SCREEN_HOME, bundle)
 
-            startActivity(Intent(this@MainActivity,ReprintActivity::class.java))
+            startActivity(Intent(this@MainActivity, ReprintActivity::class.java))
         }
 
-        binding.btnVerifyStatus.setOnClickListener{
+        binding.btnVerifyStatus.setOnClickListener {
             val bundle = Bundle().apply {
                 putString("event_type", EVENT_TYPE_CLICK)
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_STATUSCHK_CLICKED,SCREEN_HOME,bundle)
+            FirebaseAnalyticsEvents.logEvent(EVENT_STATUSCHK_CLICKED, SCREEN_HOME, bundle)
 
-            startActivity(Intent(this@MainActivity,StatusCheckActivity::class.java))
+            startActivity(Intent(this@MainActivity, StatusCheckActivity::class.java))
 
         }
 
 
-        binding.eolHistory.setOnClickListener{
+        binding.eolHistory.setOnClickListener {
 
             val plantName = getPlantDisplayNameByIp(Globals.getPlantIp());
 
@@ -274,7 +281,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun performVehicleEolLoginIfNeeded() {
         // If we already have a token, skip login
-        if (!Globals.getJWTAccessToken(this).isNullOrEmpty()) {
+        if (!Globals.getEolAccessToken(this).isNullOrEmpty()) {
             Timber.d("Inside performVehicleEolLoginIfNeeded token already present")
             return
         }
@@ -285,7 +292,7 @@ class MainActivity : AppCompatActivity() {
                 execute = {
                     val token = vehicleEolLoginRepository.loginVehicleEol()
                     if (!token.isNullOrEmpty()) {
-                        Globals.setJWTAccessToken(this@MainActivity, token)
+                        Globals.setEolAccessToken(this@MainActivity, token)
                     } else {
                         LoggerHelper.saveLogToFile(
                             this@MainActivity,
@@ -331,13 +338,21 @@ class MainActivity : AppCompatActivity() {
                         putString("event_type", EVENT_TYPE_VIEW)
                         putString("status_data", "Already installed")
                     }
-                    FirebaseAnalyticsEvents.logEvent(EVENT_MODULE_ALREADY_INSTALLED,  SCREEN_HOME, bundle)
+                    FirebaseAnalyticsEvents.logEvent(
+                        EVENT_MODULE_ALREADY_INSTALLED,
+                        SCREEN_HOME,
+                        bundle
+                    )
                 }
                 val bundle = Bundle().apply {
                     putString("event_type", EVENT_TYPE_VIEW)
                     putString("status_data", "Successfully installed")
                 }
-                FirebaseAnalyticsEvents.logEvent(EVENT_MODULE_INSTALLED_SUCCESS,  SCREEN_HOME, bundle)
+                FirebaseAnalyticsEvents.logEvent(
+                    EVENT_MODULE_INSTALLED_SUCCESS,
+                    SCREEN_HOME,
+                    bundle
+                )
             }
             .addOnFailureListener {
                 loadingDialog.dismiss()
@@ -461,10 +476,10 @@ class MainActivity : AppCompatActivity() {
                 val bundle = Bundle().apply {
                     putString("event_type", EVENT_TYPE_CLICK)
                 }
-                FirebaseAnalyticsEvents.logEvent(EVENT_USER_LOGOUT, SCREEN_HOME,bundle)
+                FirebaseAnalyticsEvents.logEvent(EVENT_USER_LOGOUT, SCREEN_HOME, bundle)
 
 
-
+                TractorMasterCache.clear()
                 PreferenceUtil.clearSharedPreference()
                 startActivity(Intent(this@MainActivity, LoginActivity::class.java))
                 finish()
@@ -532,79 +547,92 @@ class MainActivity : AppCompatActivity() {
         context.startActivity(intent)
     }
 
-   fun shareLogFile(context: Context) {
-    // Start Firebase Performance Trace
-    val trace = Firebase.performance.newTrace("share_log_file_trace")
-    trace.start()
+    fun shareLogFile(context: Context) {
+        // Start Firebase Performance Trace
+        val trace = Firebase.performance.newTrace("share_log_file_trace")
+        trace.start()
 
-    // Log Share Action Started Event
-    val bundle = Bundle().apply {
-        putString("action", "share_log_file")
-        putString("status", "started")
-    }
-    FirebaseAnalyticsEvents.logEvent(EVENT_SHARE_LOG_FILE_STARTED, SCREEN_HOME, bundle)
+        // Log Share Action Started Event
+        val bundle = Bundle().apply {
+            putString("action", "share_log_file")
+            putString("status", "started")
+        }
+        FirebaseAnalyticsEvents.logEvent(EVENT_SHARE_LOG_FILE_STARTED, SCREEN_HOME, bundle)
 
-    CoroutineScope(Dispatchers.IO).launch {
-        try {
-            val file = File(context.getExternalFilesDir(null), "logs.txt")
-            // Check if Log File Exists
-            if (!file.exists()) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val file = File(context.getExternalFilesDir(null), "logs.txt")
+                // Check if Log File Exists
+                if (!file.exists()) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, "Log file not found.", Toast.LENGTH_SHORT).show()
+                        // Log Event: Log File Not Found
+                        bundle.putString("status", "not_found")
+                        FirebaseAnalyticsEvents.logEvent(
+                            EVENT_SHARE_LOG_FILE_NOT_FOUND,
+                            SCREEN_HOME,
+                            bundle
+                        )
+                    }
+                    trace.stop()
+                    return@launch
+                }
+
+                val fileUri =
+                    FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_STREAM, fileUri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                val chooserIntent = Intent.createChooser(shareIntent, "Share Log File")
+                chooserIntent.putExtra(Intent.EXTRA_CHOSEN_COMPONENT, shareIntent)
+
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Log file not found.", Toast.LENGTH_SHORT).show()
-                    // Log Event: Log File Not Found
-                    bundle.putString("status", "not_found")
-                    FirebaseAnalyticsEvents.logEvent(EVENT_SHARE_LOG_FILE_NOT_FOUND, SCREEN_HOME, bundle)
+                    context.startActivity(chooserIntent)
+
+                    chooserIntent.getParcelableExtra<Intent>(Intent.EXTRA_INITIAL_INTENTS)?.let {
+                        val selectedPackage =
+                            it.resolveActivity(context.packageManager)?.packageName ?: "unknown"
+                        bundle.putString("status", "dialog_shown")
+                        bundle.putString("package_name", selectedPackage)
+                        FirebaseAnalyticsEvents.logEvent(
+                            EVENT_SHARE_LOG_FILE_DIALOG_SHOWN,
+                            SCREEN_HOME,
+                            bundle
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e("Log", "Error sharing log file: ${e.message}")
+
+                // Log Error Event
+                bundle.putString("status", "error")
+                bundle.putString("error_message", e.message)
+
+                FirebaseAnalyticsEvents.logEvent(EVENT_SHARE_LOG_FILE_ERROR, SCREEN_HOME, bundle)
+
+                logCrashError(
+                    apiName = "shareLogFile",
+                    error = e,
+                    message = "Failed to shareLogFile"
+                )
+            } finally {
                 trace.stop()
-                return@launch
             }
-
-            val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_STREAM, fileUri)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            }
-
-            val chooserIntent = Intent.createChooser(shareIntent, "Share Log File")
-            chooserIntent.putExtra(Intent.EXTRA_CHOSEN_COMPONENT, shareIntent)
-
-            withContext(Dispatchers.Main) {
-                context.startActivity(chooserIntent)
-
-                chooserIntent.getParcelableExtra<Intent>(Intent.EXTRA_INITIAL_INTENTS)?.let {
-                    val selectedPackage = it.resolveActivity(context.packageManager)?.packageName ?: "unknown"
-                    bundle.putString("status", "dialog_shown")
-                    bundle.putString("package_name", selectedPackage)
-                   FirebaseAnalyticsEvents.logEvent(EVENT_SHARE_LOG_FILE_DIALOG_SHOWN, SCREEN_HOME, bundle)
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("Log", "Error sharing log file: ${e.message}")
-
-            // Log Error Event
-            bundle.putString("status", "error")
-            bundle.putString("error_message", e.message)
-
-            FirebaseAnalyticsEvents.logEvent(EVENT_SHARE_LOG_FILE_ERROR, SCREEN_HOME, bundle)
-
-            logCrashError(
-                apiName = "shareLogFile",
-                error = e,
-                message = "Failed to shareLogFile"
-            )
-        } finally {
-            trace.stop()
         }
     }
-}
 
 
     //Required for chucker
     private fun askNotificationPermission() {
         // This is only necessary for API level >= 33 (TIRAMISU)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) ==
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) ==
                 PackageManager.PERMISSION_GRANTED
             ) {
                 // Can post notifications.
@@ -690,4 +718,91 @@ class MainActivity : AppCompatActivity() {
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = true
     }
 
+    private var progressDialog: AlertDialog? = null
+
+    private fun showProgress(message: String = "Loading...") {
+        if (progressDialog?.isShowing == true) return
+
+        progressDialog = AlertDialog.Builder(this)
+            .setView(ProgressBar(this))
+            .setCancelable(false)
+            .setMessage(message)
+            .create()
+
+        progressDialog?.show()
+    }
+
+    private fun hideProgress() {
+        progressDialog?.dismiss()
+        progressDialog = null
+    }
+
+    private fun ensureTractorMasterLoaded() {
+        lifecycleScope.launch {
+            try {
+                showProgress("Loading tractor models...")
+                val response = tractorRepo.fetchIfNeeded()
+
+                Timber.d("Inside EOL_TRACTOR", "API status=${response.status}")
+                Timber.d("Inside EOL_TRACTOR", "API data size=${response.data?.size}")
+
+                if (response.status && !response.data.isNullOrEmpty()) {
+                    TractorMasterCache.save(response.data!!)
+                } else {
+                    Timber.e("EOL_TRACTOR", "Empty tractor master data")
+                }
+            } catch (e: Exception) {
+                Timber.e("Failed to load list : ${e.message}")
+                ViewUtils.showSnackbar(
+                    binding.root,
+                    "Failed to load tractor master data",
+                    false
+                )
+            } finally {
+                hideProgress()
+            }
+        }
+    }
+
+    private fun loadTractorMasterAndProceed() {
+
+        if (TractorMasterCache.isAvailable()) {
+            startActivity(Intent(this, EndOfLineTestingActivity::class.java))
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                loadingDialog.show("Loading tractor master...")
+
+                val response = tractorRepo.fetchIfNeeded()
+
+                Timber.d("Response : ${response.toString()}")
+                if (response.status && !response.data.isNullOrEmpty()) {
+                    TractorMasterCache.save(response.data)
+                    Timber.d("EOL_TRACTOR", "Cache saved size=${TractorMasterCache.get().size}")
+                } else {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Tractor master not available",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@launch
+                }
+
+                Intent(this@MainActivity, EndOfLineTestingActivity::class.java)
+
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@MainActivity,
+                    "Failed to load tractor master",
+                    Toast.LENGTH_LONG
+                ).show()
+            } finally {
+                loadingDialog.dismiss()
+            }
+        }
+    }
+
 }
+

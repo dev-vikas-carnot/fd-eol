@@ -6,7 +6,6 @@ import androidx.lifecycle.*
 import com.carnot.fd.eol.features.login.data.AuthRemoteDataSourceImp
 import com.carnot.fd.eol.features.login.data.LoginRepository
 import com.carnot.fd.eol.features.login.data.request.LoginAPIRequest
-import com.carnot.fd.eol.features.login.data.request.VerifyOTPAPIRequest
 import com.carnot.fd.eol.network.ApiService
 import com.carnot.fd.eol.network.NetworkResult
 import com.carnot.fd.eol.utils.apiCall
@@ -72,26 +71,10 @@ class LoginViewModel constructor( var applicationContext: Application,
         if (resendOtpCounter != null) resendOtpCounter?.cancel()
     }
 
-    fun login() {
+    fun verifyLogin() {
         viewModelScope.launch(Dispatchers.IO + handler) {
             apiCall(execute = {
-                val loginAPIRequest = LoginAPIRequest(
-                    userName = userName
-                )
-                loginRepository.login(loginAPIRequest)
-            }, onNoInternet = {
-                loginState.postValue(NetworkResult.Error(404,"No Internet Connection"))
-
-            }, onException = {
-                loginState.postValue(NetworkResult.Error(505,it.message.toString()))
-            })
-        }
-    }
-
-    fun verifyOTP() {
-        viewModelScope.launch(Dispatchers.IO + handler) {
-            apiCall(execute = {
-                val verifyOTPAPIRequest = VerifyOTPAPIRequest(
+                val verifyOTPAPIRequest = LoginAPIRequest(
                     userName = userName,
                     otp = password
                 )
