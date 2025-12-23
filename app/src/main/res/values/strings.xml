@@ -19,6 +19,7 @@
     <string name="sim_activation_or">OR</string>
     <string name="sim_activation_scan_qr">SCAN QR</string>
     <string name="sim_activation_imei_label">IMEI:</string>
+    <string name="sim_activation_iccid_label">ICCID:</string>
     <string name="sim_activation_submit">SUBMIT</string>
     <string name="sim_activation_progress">Submitting SIM activation…</string>
     <string name="sim_activation_success">SIM activation request submitted successfully</string>

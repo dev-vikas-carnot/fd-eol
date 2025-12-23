@@ -14,8 +14,6 @@ import com.carnot.fd.eol.features.printer.data.WifiPrinterEntity
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_PRINTER_TEST_STARTED
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_VIEW
 import com.carnot.fd.eol.firebase.AnalyticsEvents.SCREEN_HOME
-import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents
-import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents.logCrashError
 import com.carnot.fd.eol.utils.LoggerHelper
 import com.carnot.fd.eol.utils.PrinterPrefs
 import com.carnot.fd.eol.utils.PrinterTestStatus
@@ -106,7 +104,7 @@ class PrinterViewModel @Inject constructor(
         ipAddress: String,
         noOfPrint: Int = 1
     ) {
-        val connection: Connection = TcpConnection(ipAddress, 6101)
+        val connection: Connection = TcpConnection(ipAddress, 9100)
 
         printState.postValue(ViewState.loading(null, "loading"))
 
@@ -118,14 +116,14 @@ class PrinterViewModel @Inject constructor(
 
             var printerStatus: PrinterStatus = printer.currentStatus
 
-            FirebaseAnalyticsEvents.logEvent(
-                EVENT_PRINTER_TEST_STARTED,
-                SCREEN_HOME,
-                Bundle().apply {
-                    putString("event_type", EVENT_TYPE_VIEW)
-                    putString("status", printerStatus.isReadyToPrint.toString())
-                }
-            )
+            // FirebaseAnalyticsEvents.logEvent(
+//                EVENT_PRINTER_TEST_STARTED,
+//                SCREEN_HOME,
+//                Bundle().apply {
+//                    putString("event_type", EVENT_TYPE_VIEW)
+//                    putString("status", printerStatus.isReadyToPrint.toString())
+//                }
+//            )
 
             if (!printerStatus.isReadyToPrint) {
                 printerTestStatus.postValue(
@@ -142,16 +140,28 @@ class PrinterViewModel @Inject constructor(
             val formattedDate =
                 SimpleDateFormat("dd-MM-yyyy").format(Date())
 
+//            val zplData =
+//                "^XA\n" +
+//                        "^PQ$noOfPrint,0,1,Y^FS\n" +
+//                        "^FO50,50^ADN,36,20^FDIMEI: 123456789012345^FS\n" +
+//                        "^FO50,100^ADN,36,20^FDICCID: 8912345678901234567^FS\n" +
+//                        "^FO50,150^ADN,36,20^FDVIN: 1HGCM82633A123456^FS\n" +
+//                        "^FO50,200^ADN,36,20^FDRESULT: PASS^FS\n" +
+//                        "^FO50,250^ADN,36,20^FDDate: $formattedDate^FS\n" +
+//                        "^FO720,20^BQN,2.0,10\n" +
+//                        "^FH_^FDMM,A,IMEI:123456789012345,_0d_0aICCID:8912345678901234567,_0d_0aVIN:1HGCM82633A123456,_0d_0aRESULT:PASS,_0d_0aDATE:$formattedDate^FS\n" +
+//                        "^XZ"
             val zplData =
                 "^XA\n" +
-                        "^PQ$noOfPrint,0,1,Y^FS\n" +
-                        "^FO50,50^ADN,36,20^FDIMEI: 123456789012345^FS\n" +
-                        "^FO50,100^ADN,36,20^FDICCID: 8912345678901234567^FS\n" +
-                        "^FO50,150^ADN,36,20^FDVIN: 1HGCM82633A123456^FS\n" +
-                        "^FO50,200^ADN,36,20^FDRESULT: PASS^FS\n" +
-                        "^FO50,250^ADN,36,20^FDDate: $formattedDate^FS\n" +
-                        "^FO720,20^BQN,2.0,10\n" +
-                        "^FH_^FDMM,A,IMEI:123456789012345,_0d_0aICCID:8912345678901234567,_0d_0aVIN:1HGCM82633A123456,_0d_0aRESULT:PASS,_0d_0aDATE:$formattedDate^FS\n" +
+                        "^PW600\n" +               // Label width (203 DPI, ~3 inch)
+                        "^LL400\n" +               // Label length
+                        "^FO20,20^A0N,30,30^FDTEST PRINT - GT800^FS\n" +
+                        "^FO20,70^A0N,28,28^FDIMEI: 123456789012345^FS\n" +
+                        "^FO20,110^A0N,28,28^FDICCID: 8912345678901234567^FS\n" +
+                        "^FO20,150^A0N,28,28^FDVIN: 1HGCM82633A123456^FS\n" +
+                        "^FO20,190^A0N,28,28^FDRESULT: PASS^FS\n" +
+                        "^FO20,230^A0N,28,28^FDDate: $formattedDate^FS\n" +
+                        "^FO350,60^BQN,2,6^FDLA,IMEI:123456789012345^FS\n" +
                         "^XZ"
 
             printerTestStatus.postValue(PrinterTestStatus.Printing)
@@ -162,6 +172,13 @@ class PrinterViewModel @Inject constructor(
 
             while (System.currentTimeMillis() - start < timeout) {
                 printerStatus = printer.currentStatus
+                if (!printerStatus.isReadyToPrint) {
+                    printerTestStatus.postValue(
+                        PrinterTestStatus.Error("GT800 not ready (check media / ribbon)")
+                    )
+                    return
+                }
+
                 if (printerStatus.labelsRemainingInBatch <= 0 &&
                     printerStatus.isReadyToPrint
                 ) {
@@ -202,11 +219,11 @@ class PrinterViewModel @Inject constructor(
             PrinterTestStatus.Error(e.message ?: "Printer error")
         )
         printState.postValue(e.message?.let { ViewState.error(null, it) })
-        logCrashError(
-            apiName = "PrinterTest",
-            error = e,
-            message = "Printer test failed"
-        )
+//        logCrashError(
+//            apiName = "PrinterTest",
+//            error = e,
+//            message = "Printer test failed"
+//        )
     }
 
     private suspend fun delaySafe() {
@@ -266,11 +283,11 @@ class PrinterViewModel @Inject constructor(
                 }
                 printerRepository.sendFileToPrinter(filePath).collectLatest {}
             } catch (e: Exception) {
-                logCrashError(
-                    apiName = "sendFileToPrinter",
-                    error = e,
-                    message = e.message ?: "File send failed"
-                )
+//                logCrashError(
+//                    apiName = "sendFileToPrinter",
+//                    error = e,
+//                    message = e.message ?: "File send failed"
+//                )
             }
         }
     }
@@ -360,11 +377,11 @@ class PrinterViewModel @Inject constructor(
             printState.postValue(
                 ViewState.error(null, e.message ?: "Printer error")
             )
-            logCrashError(
-                apiName = "sendToPrinterStatus",
-                error = e,
-                message = "Failed to print"
-            )
+//            logCrashError(
+//                apiName = "sendToPrinterStatus",
+//                error = e,
+//                message = "Failed to print"
+//            )
         } finally {
             connection.close()
         }

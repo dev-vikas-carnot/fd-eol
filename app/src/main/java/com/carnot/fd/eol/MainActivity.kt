@@ -31,6 +31,7 @@ import com.carnot.fd.eol.features.printer.PrinterIpDialogFragment
 import com.carnot.fd.eol.features.printer.PrinterViewModel
 import com.carnot.fd.eol.features.printer.ReprintActivity
 import com.carnot.fd.eol.features.statuscheck.StatusCheckActivity
+import com.carnot.fd.eol.features.test.CameraXScannerActivity
 import com.carnot.fd.eol.features.vehicle_mapping.domain.TractorMasterCache
 import com.carnot.fd.eol.features.vehicle_mapping.ui.EndOfLineTestingActivity
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_END_OF_LINE_TESTING_CLICKED
@@ -50,8 +51,6 @@ import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_CLICK
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_VIEW
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_USER_LOGOUT
 import com.carnot.fd.eol.firebase.AnalyticsEvents.SCREEN_HOME
-import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents
-import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents.logCrashError
 import com.carnot.fd.eol.utils.Constants
 import com.carnot.fd.eol.utils.Globals
 import com.carnot.fd.eol.utils.Globals.getPlantDisplayNameByIp
@@ -60,11 +59,8 @@ import com.carnot.fd.eol.utils.PdfHelper
 import com.carnot.fd.eol.utils.PreferenceUtil
 import com.carnot.fd.eol.utils.ViewUtils
 import com.carnot.fd.eol.utils.apiCall
-import com.google.android.gms.common.moduleinstall.ModuleInstall
-import com.google.android.gms.common.moduleinstall.ModuleInstallRequest
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.perf.ktx.performance
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -97,15 +93,15 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        PreferenceUtil.initPreference(this)
         ensureTractorMasterLoaded()
 
         val bundle = Bundle().apply {
             putString("event_type", EVENT_TYPE_VIEW)
         }
-        FirebaseAnalyticsEvents.logEvent(EVENT_HOME_SCREEN_VIEWED, SCREEN_HOME, bundle)
+//        // FirebaseAnalyticsEvents.logEvent(EVENT_HOME_SCREEN_VIEWED, SCREEN_HOME, bundle)
 
 
-        PreferenceUtil.initPreference(this)
         //startActivity(Intent(this,LoginActivity::class.java))
         // Ensure Vehicle EOL token is fetched and cached
         performVehicleEolLoginIfNeeded()
@@ -126,7 +122,7 @@ class MainActivity : AppCompatActivity() {
             val bundle = Bundle().apply {
                 putString("event_type", EVENT_TYPE_CLICK)
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_SIM_ACTIVATION_CLICKED, SCREEN_HOME, bundle)
+//            // FirebaseAnalyticsEvents.logEvent(EVENT_SIM_ACTIVATION_CLICKED, SCREEN_HOME, bundle)
 
             if (checkCameraPermission()) {
                 startActivity(
@@ -145,7 +141,7 @@ class MainActivity : AppCompatActivity() {
             val bundle = Bundle().apply {
                 putString("event_type", EVENT_TYPE_CLICK)
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_END_OF_LINE_TESTING_CLICKED, SCREEN_HOME, bundle)
+//            // FirebaseAnalyticsEvents.logEvent(EVENT_END_OF_LINE_TESTING_CLICKED, SCREEN_HOME, bundle)
 
             if (checkCameraPermission()) {
                 if (!TractorMasterCache.isAvailable()) {
@@ -162,7 +158,7 @@ class MainActivity : AppCompatActivity() {
             val bundle = Bundle().apply {
                 putString("event_type", EVENT_TYPE_CLICK)
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_SHARE_LOG_FILE_CLICKED, SCREEN_HOME, bundle)
+//            // FirebaseAnalyticsEvents.logEvent(EVENT_SHARE_LOG_FILE_CLICKED, SCREEN_HOME, bundle)
 
             /*
             val pdfFilePath = PdfHelper.createSamplePdf(this,"12230","12","Pass")
@@ -188,7 +184,7 @@ class MainActivity : AppCompatActivity() {
 //            val bundle = Bundle().apply {
 //                putString("event_type", EVENT_TYPE_CLICK)
 //            }
-//            FirebaseAnalyticsEvents.logEvent(EVENT_TEST_PRINTER_CLICKED,SCREEN_HOME,bundle)
+//            // FirebaseAnalyticsEvents.logEvent(EVENT_TEST_PRINTER_CLICKED,SCREEN_HOME,bundle)
 //
 //            LoggerHelper.saveLogToFile(this, "onPrintButtonClick")
 //
@@ -227,7 +223,7 @@ class MainActivity : AppCompatActivity() {
             val bundle = Bundle().apply {
                 putString("event_type", EVENT_TYPE_CLICK)
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_CLICKED, SCREEN_HOME, bundle)
+//            // FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_CLICKED, SCREEN_HOME, bundle)
 
             startActivity(Intent(this@MainActivity, ReprintActivity::class.java))
         }
@@ -236,7 +232,7 @@ class MainActivity : AppCompatActivity() {
             val bundle = Bundle().apply {
                 putString("event_type", EVENT_TYPE_CLICK)
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_STATUSCHK_CLICKED, SCREEN_HOME, bundle)
+//            // FirebaseAnalyticsEvents.logEvent(EVENT_STATUSCHK_CLICKED, SCREEN_HOME, bundle)
 
             startActivity(Intent(this@MainActivity, StatusCheckActivity::class.java))
 
@@ -259,14 +255,6 @@ class MainActivity : AppCompatActivity() {
 
 
         }
-//        binding.btnTestBLZebraPrinter.setOnClickListener {
-//            LoggerHelper.saveLogToFile(this,"onPrintButtonClick")
-//            Toast.makeText(this, "Please wait...", Toast.LENGTH_SHORT).show()
-////        printerViewModel.fetchBluetoothPrinters()
-//            printerViewModel.fetchBluetoothPrinters()
-//        }
-
-        //viewModel.fetchBluetoothPrinters()
 
         observeChanges()
         initScanner()
@@ -317,53 +305,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initScanner() {
-        val scanner = GmsBarcodeScanning.getClient(this)
-        val moduleInstallRequest =
-            ModuleInstallRequest.newBuilder()
-                .addApi(scanner) //Add the scanner client to the module install request
-                .build()
-
-        val moduleInstallClient = ModuleInstall.getClient(this)
-
-//Send an urgent module install request see https://developers.google.com/android/guides/module-install-apis#send_an_urgent_module_install_request
-//If you'd like the OS to determine the best time, use a deferred install request, but I'd recommend the urgent one
-//See https://developers.google.com/android/guides/module-install-apis#send_a_deferred_install_request
-        loadingDialog.show("Setting Up Scanner...")
-        moduleInstallClient
-            .installModules(moduleInstallRequest)
-            .addOnSuccessListener {
-                loadingDialog.dismiss()
-                if (it.areModulesAlreadyInstalled()) {
-                    val bundle = Bundle().apply {
-                        putString("event_type", EVENT_TYPE_VIEW)
-                        putString("status_data", "Already installed")
-                    }
-                    FirebaseAnalyticsEvents.logEvent(
-                        EVENT_MODULE_ALREADY_INSTALLED,
-                        SCREEN_HOME,
-                        bundle
-                    )
-                }
-                val bundle = Bundle().apply {
-                    putString("event_type", EVENT_TYPE_VIEW)
-                    putString("status_data", "Successfully installed")
-                }
-                FirebaseAnalyticsEvents.logEvent(
-                    EVENT_MODULE_INSTALLED_SUCCESS,
-                    SCREEN_HOME,
-                    bundle
-                )
-            }
-            .addOnFailureListener {
-                loadingDialog.dismiss()
-                val bundle = Bundle().apply {
-                    putString("event_type", EVENT_TYPE_VIEW)
-                    putString("status_data", "install error ${it.message}")
-                }
-                FirebaseAnalyticsEvents.logEvent(EVENT_MODULE_INSTALL_ERROR, SCREEN_HOME, bundle)
-
-                Log.e("MainActivity", "Error installing modules", it)
-            }
+        // Scanner module installation removed as we are using CameraX
     }
 
 //    override fun onResume() {
@@ -431,7 +373,7 @@ class MainActivity : AppCompatActivity() {
 //                        putString("event_type", EVENT_TYPE_API)
 //                        putString("status_data", it.data)
 //                    }
-//                    FirebaseAnalyticsEvents.logEvent( EVENT_PRINTER_TEST_SUCCESS,  SCREEN_HOME, bundle)
+//                    // FirebaseAnalyticsEvents.logEvent( EVENT_PRINTER_TEST_SUCCESS,  SCREEN_HOME, bundle)
 //
 //                    Toast.makeText(this, it.data, Toast.LENGTH_SHORT).show()
 //                }
@@ -442,7 +384,7 @@ class MainActivity : AppCompatActivity() {
 //                        putString("event_type", EVENT_TYPE_API)
 //                        putString("error_message", it.message)
 //                    }
-//                    FirebaseAnalyticsEvents.logEvent( EVENT_PRINTER_TEST_FAILURE,  SCREEN_HOME, bundle)
+//                    // FirebaseAnalyticsEvents.logEvent( EVENT_PRINTER_TEST_FAILURE,  SCREEN_HOME, bundle)
 //
 //                    Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
 //                }
@@ -452,7 +394,7 @@ class MainActivity : AppCompatActivity() {
 //                        putString("event_type", EVENT_TYPE_API)
 //                        putString("error_message", it.message)
 //                    }
-//                    FirebaseAnalyticsEvents.logEvent( EVENT_PRINTER_TEST_STARTED,  SCREEN_HOME, bundle)
+//                    // FirebaseAnalyticsEvents.logEvent( EVENT_PRINTER_TEST_STARTED,  SCREEN_HOME, bundle)
 //                    Toast.makeText(this, it.message, Toast.LENGTH_SHORT).show()
 //                }
 //
@@ -476,7 +418,7 @@ class MainActivity : AppCompatActivity() {
                 val bundle = Bundle().apply {
                     putString("event_type", EVENT_TYPE_CLICK)
                 }
-                FirebaseAnalyticsEvents.logEvent(EVENT_USER_LOGOUT, SCREEN_HOME, bundle)
+                // FirebaseAnalyticsEvents.logEvent(EVENT_USER_LOGOUT, SCREEN_HOME, bundle)
 
 
                 TractorMasterCache.clear()
@@ -557,7 +499,7 @@ class MainActivity : AppCompatActivity() {
             putString("action", "share_log_file")
             putString("status", "started")
         }
-        FirebaseAnalyticsEvents.logEvent(EVENT_SHARE_LOG_FILE_STARTED, SCREEN_HOME, bundle)
+        // FirebaseAnalyticsEvents.logEvent(EVENT_SHARE_LOG_FILE_STARTED, SCREEN_HOME, bundle)
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -568,11 +510,11 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(context, "Log file not found.", Toast.LENGTH_SHORT).show()
                         // Log Event: Log File Not Found
                         bundle.putString("status", "not_found")
-                        FirebaseAnalyticsEvents.logEvent(
-                            EVENT_SHARE_LOG_FILE_NOT_FOUND,
-                            SCREEN_HOME,
-                            bundle
-                        )
+                        // FirebaseAnalyticsEvents.logEvent(
+//                            EVENT_SHARE_LOG_FILE_NOT_FOUND,
+//                            SCREEN_HOME,
+//                            bundle
+//                        )
                     }
                     trace.stop()
                     return@launch
@@ -597,11 +539,11 @@ class MainActivity : AppCompatActivity() {
                             it.resolveActivity(context.packageManager)?.packageName ?: "unknown"
                         bundle.putString("status", "dialog_shown")
                         bundle.putString("package_name", selectedPackage)
-                        FirebaseAnalyticsEvents.logEvent(
-                            EVENT_SHARE_LOG_FILE_DIALOG_SHOWN,
-                            SCREEN_HOME,
-                            bundle
-                        )
+                        // FirebaseAnalyticsEvents.logEvent(
+//                            EVENT_SHARE_LOG_FILE_DIALOG_SHOWN,
+//                            SCREEN_HOME,
+//                            bundle
+//                        )
                     }
                 }
             } catch (e: Exception) {
@@ -611,13 +553,13 @@ class MainActivity : AppCompatActivity() {
                 bundle.putString("status", "error")
                 bundle.putString("error_message", e.message)
 
-                FirebaseAnalyticsEvents.logEvent(EVENT_SHARE_LOG_FILE_ERROR, SCREEN_HOME, bundle)
+                // FirebaseAnalyticsEvents.logEvent(EVENT_SHARE_LOG_FILE_ERROR, SCREEN_HOME, bundle)
 
-                logCrashError(
-                    apiName = "shareLogFile",
-                    error = e,
-                    message = "Failed to shareLogFile"
-                )
+//                logCrashError(
+//                    apiName = "shareLogFile",
+//                    error = e,
+//                    message = "Failed to shareLogFile"
+//                )
             } finally {
                 trace.stop()
             }

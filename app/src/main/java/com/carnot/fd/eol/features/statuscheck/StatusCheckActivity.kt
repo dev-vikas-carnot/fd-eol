@@ -8,6 +8,7 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
@@ -33,15 +34,11 @@ import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_CLICK
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_VIEW
 import com.carnot.fd.eol.firebase.AnalyticsEvents.SCREEN_REPRINT
 import com.carnot.fd.eol.firebase.AnalyticsEvents.SCREEN_staTus
-import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents
 import com.carnot.fd.eol.network.ApiResponse
 import com.carnot.fd.eol.utils.Globals
 import com.carnot.fd.eol.utils.LoggerHelper
 import com.carnot.fd.eol.utils.PdfHelper
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
-import com.google.zxing.integration.android.IntentIntegrator
+import com.carnot.fd.eol.features.test.CameraXScannerActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -57,9 +54,6 @@ class StatusCheckActivity : AppCompatActivity() {
     private lateinit var  viewModel: StatusCheckViewModelViewModel
 
     private  val  printerViewModel: PrinterViewModel by viewModels()
-
-    /*Intent Handles For QR Code Scanning*/
-    var scanIntent: IntentIntegrator? = null
 
     private lateinit var loadingDialog: LoadingDialog
     private lateinit var customDialog: CustomDialog
@@ -82,16 +76,9 @@ class StatusCheckActivity : AppCompatActivity() {
         val bundle = Bundle().apply {
             putString("event_type", EVENT_TYPE_VIEW)
         }
-        FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCREEN_VIEWED, SCREEN_REPRINT,bundle)
+        // FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCREEN_VIEWED, SCREEN_REPRINT,bundle)
 
 
-        val options = GmsBarcodeScannerOptions.Builder()
-            .setBarcodeFormats(
-                Barcode.FORMAT_QR_CODE,
-                Barcode.FORMAT_AZTEC)
-            .enableAutoZoom()
-            .build()
-        val scanner = GmsBarcodeScanning.getClient(this, options)
         // Initialize the loading dialog
         loadingDialog = LoadingDialog(this)
 
@@ -105,38 +92,14 @@ class StatusCheckActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = "Status Check"
 
-        scanIntent = IntentIntegrator(this)
-
 
         binding.scanQR.setOnClickListener {
-            //qrCodeScan(1)
             val bundle = Bundle().apply {
                 putString("event_type", EVENT_TYPE_CLICK)
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCAN, SCREEN_REPRINT,bundle)
+            // FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCAN, SCREEN_REPRINT,bundle)
 
-
-            scanner.startScan().addOnSuccessListener { barcode ->
-                barcode.rawValue?.let {
-                    it1 -> viewModel.scanVin(it1)
-                }
-            }.addOnCanceledListener {
-                // Task canceled
-                val bundle = Bundle().apply {
-                    putString("event_type", EVENT_TYPE_CLICK)
-                }
-                FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCANCANCELL,SCREEN_REPRINT,bundle)
-
-
-            }.addOnFailureListener { e ->
-                // Task failed with an exception
-                val bundle = Bundle().apply {
-                    putString("event_type", EVENT_TYPE_CLICK)
-                    putString("error_message", e.message)
-                }
-                FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCANFAIL,SCREEN_REPRINT,bundle)
-
-            }
+            scanLauncher.launch(Intent(this, CameraXScannerActivity::class.java))
         }
         CoroutineScope(Dispatchers.Main).launch {
             printerViewModel.uiState.collectLatest {
@@ -215,7 +178,7 @@ class StatusCheckActivity : AppCompatActivity() {
                         putString("event_type", EVENT_TYPE_API)
                         putString("error_message",response.message )
                     }
-                    FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCAN_FAILURE,SCREEN_REPRINT,bundle)
+                    // FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCAN_FAILURE,SCREEN_REPRINT,bundle)
 
                 }
                 is ApiResponse.Success -> {
@@ -243,7 +206,7 @@ class StatusCheckActivity : AppCompatActivity() {
                         putString("status", status)
                         putString("message",response.message )
                     }
-                    FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCAN_SUCCESS,SCREEN_REPRINT,bundle)
+                    // FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCAN_SUCCESS,SCREEN_REPRINT,bundle)
 
                     val customMessage = when (response.message.toString()) {
                         "VIN not available in record" -> "EOL NOT ATTEMPTED"
@@ -293,7 +256,7 @@ class StatusCheckActivity : AppCompatActivity() {
                     putString("event_type", EVENT_TYPE_VIEW)
                     putString("vin", binding.etVin.text.toString())
                 }
-                FirebaseAnalyticsEvents.logEvent(EVENT_MANUAL_ENTRY,SCREEN_REPRINT,bundle)
+                // FirebaseAnalyticsEvents.logEvent(EVENT_MANUAL_ENTRY,SCREEN_REPRINT,bundle)
 
                 viewModel.scanVin(textView.text.toString())
                 hideKeyboard(binding.etVin)
@@ -309,7 +272,7 @@ class StatusCheckActivity : AppCompatActivity() {
                 putString("event_type", EVENT_TYPE_CLICK)
                 putString("vin",vin )
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_CLICKED,SCREEN_REPRINT,bundle)
+            // FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_CLICKED,SCREEN_REPRINT,bundle)
             viewModel.submit(vin)
         }
     }
@@ -329,7 +292,7 @@ class StatusCheckActivity : AppCompatActivity() {
             putString("eoldate",eolDate)
             putString("plantip",Globals.getPlantIp())
         }
-        FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCAN_CLICKED,SCREEN_staTus,bundle)
+        // FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCAN_CLICKED,SCREEN_staTus,bundle)
 
         LoggerHelper.saveLogToFile(this,"onPrintButtonClick")
         Toast.makeText(this, "Please wait...", Toast.LENGTH_SHORT).show()
@@ -357,21 +320,20 @@ class StatusCheckActivity : AppCompatActivity() {
                     Toast.makeText(this@StatusCheckActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
 
-                FirebaseAnalyticsEvents.logError(EVENT_REPRINT_CLICKED, e, "connect to the re print failure")
+                // FirebaseAnalyticsEvents.logError(EVENT_REPRINT_CLICKED, e, "connect to the re print failure")
 
             }
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK) {
-            val result = data?.getStringExtra("SCAN_RESULT") ?: ""
-            when (requestCode) {
-                1 -> {
-                    viewModel.scanVin(result)
-                    vin = result
-                }
+    private val scanLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val scanResult = result.data?.getStringExtra("SCAN_RESULT")
+            if (!scanResult.isNullOrEmpty()) {
+                viewModel.scanVin(scanResult)
+                vin = scanResult
             }
         }
     }

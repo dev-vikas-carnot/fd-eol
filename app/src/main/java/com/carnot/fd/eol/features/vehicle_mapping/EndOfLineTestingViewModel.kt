@@ -23,7 +23,6 @@ import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_Step2_EOL
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_API
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_CLICK
 import com.carnot.fd.eol.firebase.AnalyticsEvents.SCREEN_EOL
-import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents
 import com.carnot.fd.eol.network.ApiResponse
 import com.carnot.fd.eol.network.ApiService
 import com.carnot.fd.eol.utils.Constants
@@ -37,6 +36,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 class EndOfLineTestingViewModel(val applicationContext: Application) :
     AndroidViewModel(applicationContext) {
@@ -120,6 +120,7 @@ class EndOfLineTestingViewModel(val applicationContext: Application) :
     // === IMEI SCANNING ===
     fun scanImei(qrResult: String) {
         // Only allow if in initial state
+        Timber.e("Inside scanImei success :$qrResult }")
         if (_uiState.value != EolUiState.ImeiInput) return
         val imei = qrResult
             .trim()
@@ -127,6 +128,7 @@ class EndOfLineTestingViewModel(val applicationContext: Application) :
             .firstOrNull()
             .orEmpty()
         if (isImeiValid(imei)) {
+            Timber.e("Inside scanImei success 1 :$imei }")
             _imei.value = imei
             _uiState.value = EolUiState.DeviceStatusPolling
 
@@ -135,7 +137,7 @@ class EndOfLineTestingViewModel(val applicationContext: Application) :
                 putString("event_type", EVENT_TYPE_CLICK)
                 putString("imei", imei)
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_SCAN_VIN2_SUCCESS, SCREEN_EOL, successBundle)
+//            // // FirebaseAnalyticsEvents.logEvent(EVENT_SCAN_VIN2_SUCCESS, SCREEN_EOL, successBundle)
 
             if (Constants.EOL_DUMMY_STATUS_ENABLED) {
                 startDummyDeviceStatusFlow()
@@ -143,13 +145,14 @@ class EndOfLineTestingViewModel(val applicationContext: Application) :
                 startDeviceStatusPolling(startNewWindow = true)
             }
         } else {
+            Timber.e("Inside scanImei success 2 :$qrResult }")
             val bundle = Bundle().apply {
                 putString("event_type", EVENT_TYPE_CLICK)
                 putString("type_scan", "scan_imei2")
                 putString("result", qrResult)
                 putString("error_message", "Not a valid IMEI")
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_QR_VALIDATION_FAILED, SCREEN_EOL, bundle)
+//            // FirebaseAnalyticsEvents.logEvent(EVENT_QR_VALIDATION_FAILED, SCREEN_EOL, bundle)
 
             viewModelScope.launch {
                 delay(100)
@@ -247,11 +250,11 @@ class EndOfLineTestingViewModel(val applicationContext: Application) :
                 putString("vehicle_eol_status", "true")
             }
 
-            FirebaseAnalyticsEvents.logEvent(
-                EVENT_EOL_API_CALLED,
-                SCREEN_EOL,
-                analyticsBundle
-            )
+//            // FirebaseAnalyticsEvents.logEvent(
+//                EVENT_EOL_API_CALLED,
+//                SCREEN_EOL,
+//                analyticsBundle
+//            )
 
             _apiResponseSubmit.value = ApiResponse.Loading
 
@@ -350,7 +353,7 @@ class EndOfLineTestingViewModel(val applicationContext: Application) :
             putString("imei", _imei.value.toString())
             putString("event_type", EVENT_TYPE_CLICK)
         }
-        FirebaseAnalyticsEvents.logEvent(EVENT_RETRY_CLICKED, SCREEN_EOL, bundle)
+//        // FirebaseAnalyticsEvents.logEvent(EVENT_RETRY_CLICKED, SCREEN_EOL, bundle)
 
         // Restart polling (new 2-minute window)
         startDeviceStatusPolling(startNewWindow = true)
@@ -408,14 +411,14 @@ class EndOfLineTestingViewModel(val applicationContext: Application) :
             putString("imei", _imei.value.toString())
             putString("event_type", EVENT_TYPE_API)
         }
-        FirebaseAnalyticsEvents.logEvent(EVENT_FLAGS_API_CALLED, SCREEN_EOL, bundle)
+//        // FirebaseAnalyticsEvents.logEvent(EVENT_FLAGS_API_CALLED, SCREEN_EOL, bundle)
 
 
 
         viewModelScope.launch {
             applicationContext.logMessage("Get Device Status Api Start")
 
-            FirebaseAnalyticsEvents.logApiCall(API_SD_DEVICE_INSTALLATION_STATUS)
+//            // FirebaseAnalyticsEvents.logApiCall(API_SD_DEVICE_INSTALLATION_STATUS)
 
             _apiResponseStatus.value = ApiResponse.Loading
 
@@ -427,20 +430,20 @@ class EndOfLineTestingViewModel(val applicationContext: Application) :
                     val requestBundle = Bundle().apply {
                         putString("imei", request.imei)
                     }
-                    FirebaseAnalyticsEvents.logApiCall(
-                        API_SD_DEVICE_INSTALLATION_STATUS,
-                        requestBundle
-                    )
+//                    // FirebaseAnalyticsEvents.logApiCall(
+//                        API_SD_DEVICE_INSTALLATION_STATUS,
+//                        requestBundle
+//                    )
 
                     val response = apiService.getDeviceStatus(request)
                     applicationContext.logMessage("Get Device Status Api Response Received")
 
                     withContext(Dispatchers.Main) {
                         if (response.status) {
-                            FirebaseAnalyticsEvents.logApiResponse(
-                                API_SD_DEVICE_INSTALLATION_STATUS,
-                                "Success"
-                            )
+//                            // FirebaseAnalyticsEvents.logApiResponse(
+//                                API_SD_DEVICE_INSTALLATION_STATUS,
+//                                "Success"
+//                            )
 
                             _apiResponseStatus.value = ApiResponse.Success(response.data)
                             _gpsLockStatus.value = response.data!!.gps
@@ -456,16 +459,16 @@ class EndOfLineTestingViewModel(val applicationContext: Application) :
                                 putString("battery", response.data!!.battery.toString())
                                 putString("activationId", response.data!!.activation_id.toString())
                             }
-                            FirebaseAnalyticsEvents.logEvent(
-                                EVENT_FLAGS_API_SUCCESS,
-                                SCREEN_EOL,
-                                successBundle
-                            )
-                            FirebaseAnalyticsEvents.logEvent(
-                                EVENT_Step2_EOL,
-                                SCREEN_EOL,
-                                successBundle
-                            )
+//                            // FirebaseAnalyticsEvents.logEvent(
+//                                EVENT_FLAGS_API_SUCCESS,
+//                                SCREEN_EOL,
+//                                successBundle
+//                            )
+//                            // FirebaseAnalyticsEvents.logEvent(
+//                                EVENT_Step2_EOL,
+//                                SCREEN_EOL,
+//                                successBundle
+//                            )
 
                             // Check if all flags passed
                             if (_gpsLockStatus.value == true &&
@@ -484,11 +487,11 @@ class EndOfLineTestingViewModel(val applicationContext: Application) :
 
                             applicationContext.logMessage("Get Device Status Api Success")
                         } else {
-                            FirebaseAnalyticsEvents.logError(
-                                API_SD_DEVICE_INSTALLATION_STATUS,
-                                Exception("API Error"),
-                                response.message
-                            )
+                            // FirebaseAnalyticsEvents.logError(
+//                                API_SD_DEVICE_INSTALLATION_STATUS,
+//                                Exception("API Error"),
+//                                response.message
+//                            )
 
                             delay(1000)
                             // Reset to initial state on error
@@ -503,11 +506,11 @@ class EndOfLineTestingViewModel(val applicationContext: Application) :
                     }
                 },
                 onException = {
-                    FirebaseAnalyticsEvents.logError(
-                        API_SD_DEVICE_INSTALLATION_STATUS,
-                        it,
-                        "Network failure"
-                    )
+//                    // FirebaseAnalyticsEvents.logError(
+//                        API_SD_DEVICE_INSTALLATION_STATUS,
+//                        it,
+//                        "Network failure"
+//                    )
                     _uiState.postValue(EolUiState.ImeiInput)
                     _imei.postValue("")
                     _retryTime.postValue("0")
@@ -521,11 +524,11 @@ class EndOfLineTestingViewModel(val applicationContext: Application) :
                     applicationContext.logMessage("Get Device Status Api Exception : ${it.message}")
                 },
                 onNoInternet = {
-                    FirebaseAnalyticsEvents.logError(
-                        API_SD_DEVICE_INSTALLATION_STATUS,
-                        Exception("No Internet"),
-                        "Internet not available"
-                    )
+                    // FirebaseAnalyticsEvents.logError(
+//                        API_SD_DEVICE_INSTALLATION_STATUS,
+//                        Exception("No Internet"),
+//                        "Internet not available"
+//                    )
                     _uiState.postValue(EolUiState.ImeiInput)
                     _imei.postValue("")
                     _retryTime.postValue("0")

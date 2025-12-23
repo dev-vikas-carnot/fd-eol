@@ -15,7 +15,7 @@ object FirebaseAnalyticsEvents {
     private lateinit var firebaseAnalytics: FirebaseAnalytics
 
     fun init(context: Context) {
-        // ✅ Initialize PreferenceUtil before FirebaseAnalyticsEvents
+        // ✅ Initialize PreferenceUtil before // FirebaseAnalyticsEvents
         PreferenceUtil.initPreference(context)
 
         firebaseAnalytics = FirebaseAnalytics.getInstance(context)
@@ -36,7 +36,7 @@ object FirebaseAnalyticsEvents {
         screenName?.let {
             eventBundle.putString(FirebaseAnalytics.Param.SCREEN_NAME, it)
         }
-        firebaseAnalytics.logEvent(eventName, eventBundle)
+//        firebaseAnalytics.logEvent(eventName, eventBundle)
     }
 
     fun setUserProperty(propertyName: String, propertyValue: String) {

@@ -9,7 +9,6 @@ import com.carnot.fd.eol.databinding.ActivityFaqBinding
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_FAQ_VIEWED
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_VIEW
 import com.carnot.fd.eol.firebase.AnalyticsEvents.SCREEN_FAQ
-import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents
 import com.carnot.fd.eol.utils.getAssetPdfUri
 
 
@@ -26,7 +25,7 @@ class FAQActivity : AppCompatActivity() {
         val bundle = Bundle().apply {
             putString("event_type", EVENT_TYPE_VIEW)
         }
-        FirebaseAnalyticsEvents.logEvent(EVENT_FAQ_VIEWED, SCREEN_FAQ,bundle)
+        // FirebaseAnalyticsEvents.logEvent(EVENT_FAQ_VIEWED, SCREEN_FAQ,bundle)
 
         initView()
         observeChanges()

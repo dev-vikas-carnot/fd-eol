@@ -36,15 +36,12 @@ import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_BACKEND
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_CLICK
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_VIEW
 import com.carnot.fd.eol.firebase.AnalyticsEvents.SCREEN_EOL
-import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents
 import com.carnot.fd.eol.network.ApiResponse
 import com.carnot.fd.eol.utils.Globals
 import com.carnot.fd.eol.utils.LoggerHelper
 import com.carnot.fd.eol.utils.PdfHelper
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
-import com.google.zxing.integration.android.IntentIntegrator
+import com.carnot.fd.eol.features.test.CameraXScannerActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -68,8 +65,7 @@ class EndOfLineTestingActivity : AppCompatActivity() {
 
     private val printerViewModel: PrinterViewModel by viewModels()
 
-    /*Intent Handles For QR Code Scanning*/
-    var scanIntent: IntentIntegrator? = null
+    private var scanType = 0 // 0: None, 1: IMEI, 2: VIN
 
     private lateinit var loadingDialog: LoadingDialog
     private lateinit var customDialog: CustomDialog
@@ -93,15 +89,11 @@ class EndOfLineTestingActivity : AppCompatActivity() {
         val bundle = Bundle().apply {
             putString("event_type", EVENT_TYPE_VIEW)
         }
-        FirebaseAnalyticsEvents.logEvent(
-            EVENT_EOL_SCREEN_VIEWED,
-            SCREEN_EOL,bundle)
+        // FirebaseAnalyticsEvents.logEvent(
+//            EVENT_EOL_SCREEN_VIEWED,
+//            SCREEN_EOL,bundle)
 
 
-        val options = GmsBarcodeScannerOptions.Builder().setBarcodeFormats(
-            Barcode.FORMAT_QR_CODE, Barcode.FORMAT_AZTEC
-        ).enableAutoZoom().build()
-        val scanner = GmsBarcodeScanning.getClient(this, options)
         // Initialize the loading dialog
         loadingDialog = LoadingDialog(this)
 
@@ -122,40 +114,17 @@ class EndOfLineTestingActivity : AppCompatActivity() {
         // Enable back button in the Action Bar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        scanIntent = IntentIntegrator(this)
 
         binding.btnScanTractorImei.setOnClickListener {
 
             val bundle = Bundle().apply {
                 putString("event_type", EVENT_TYPE_CLICK)
             }
-            FirebaseAnalyticsEvents.logEvent( EVENT_SCAN_IMEI2_CLICKED, SCREEN_EOL,bundle)
+            // FirebaseAnalyticsEvents.logEvent( EVENT_SCAN_IMEI2_CLICKED, SCREEN_EOL,bundle)
 
 
-            //qrCodeScan(1)
-            scanner.startScan().addOnSuccessListener { barcode ->
-                barcode.rawValue?.let { it1 -> viewModel.scanImei(it1) }
-            }.addOnCanceledListener {
-                // Task canceled
-                val bundle = Bundle().apply {
-                    putString("event_type", EVENT_TYPE_API)
-                }
-                FirebaseAnalyticsEvents.logEvent(
-                    EVENT_SCAN_IMEI2_CANCELLED,
-                    SCREEN_EOL,bundle)
-
-            }.addOnFailureListener { e ->
-                // Task failed with an exception
-                val bundle = Bundle().apply {
-                    putString("event_type", EVENT_TYPE_API)
-                    putString("message", e.message.toString())
-                    putString("error_message", e.localizedMessage?.toString())
-
-                }
-                FirebaseAnalyticsEvents.logEvent(
-                    EVENT_SCAN_IMEI2_FAILURE,
-                    SCREEN_EOL,bundle)
-            }
+            scanType = 1
+            scanLauncher.launch(Intent(this, CameraXScannerActivity::class.java))
         }
 
         viewModel.apiResponseStatus.observe(this) { response ->
@@ -173,9 +142,9 @@ class EndOfLineTestingActivity : AppCompatActivity() {
                         putString("error_message", response.message)
 
                     }
-                    FirebaseAnalyticsEvents.logEvent(
-                        EVENT_FLAGS_API_FAILURE,
-                        SCREEN_EOL,bundle)
+                    // FirebaseAnalyticsEvents.logEvent(
+//                        EVENT_FLAGS_API_FAILURE,
+//                        SCREEN_EOL,bundle)
                     // Show error message
                     Toast.makeText(this, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
 
@@ -194,7 +163,7 @@ class EndOfLineTestingActivity : AppCompatActivity() {
                         putString("iccid",iccid)
                         putString("event_type", EVENT_TYPE_API)
                     }
-                    FirebaseAnalyticsEvents.logEvent( EVENT_FLAGS_API_SUCCESS, SCREEN_EOL,bundle)
+                    // FirebaseAnalyticsEvents.logEvent( EVENT_FLAGS_API_SUCCESS, SCREEN_EOL,bundle)
                     // loadingDialog.dismiss()
 
                 }
@@ -220,7 +189,7 @@ class EndOfLineTestingActivity : AppCompatActivity() {
                         putString("vin2",vin)
                         putString("error_message",response.message)
                     }
-                    FirebaseAnalyticsEvents.logEvent( EVENT_EOL_API_FAILURE, SCREEN_EOL,bundle)
+                    // FirebaseAnalyticsEvents.logEvent( EVENT_EOL_API_FAILURE, SCREEN_EOL,bundle)
 
                     if (response.message == "EOL already PASSED for this VIN") {
                         binding.btnRetry.visibility = View.GONE
@@ -290,8 +259,8 @@ class EndOfLineTestingActivity : AppCompatActivity() {
 
                         putString("event_type", EVENT_TYPE_API)
                     }
-                    FirebaseAnalyticsEvents.logEvent( EVENT_EOL_API_SUCCESS, SCREEN_EOL,bundle)
-                    FirebaseAnalyticsEvents.logEvent( EVENT_Submit_EOL, SCREEN_EOL,bundle)
+                    // FirebaseAnalyticsEvents.logEvent( EVENT_EOL_API_SUCCESS, SCREEN_EOL,bundle)
+                    // FirebaseAnalyticsEvents.logEvent( EVENT_Submit_EOL, SCREEN_EOL,bundle)
 
                     customDialog.show(icon = R.drawable.baseline_check_circle_outline_24,
                         "End Of Line Testing Passed",
@@ -365,7 +334,7 @@ class EndOfLineTestingActivity : AppCompatActivity() {
                     putString("event_type", EVENT_TYPE_VIEW)
                     putString("vin2", textView.text.toString())
                 }
-                FirebaseAnalyticsEvents.logEvent(EVENT_MANUAL_ENTRY, SCREEN_EOL,bundle)
+                // FirebaseAnalyticsEvents.logEvent(EVENT_MANUAL_ENTRY, SCREEN_EOL,bundle)
 
                 hideKeyboard(binding.etImei)
                 true
@@ -380,7 +349,7 @@ class EndOfLineTestingActivity : AppCompatActivity() {
                 putString("imei",binding.etImei.text.toString())
                 putString("event_type", EVENT_TYPE_API)
             }
-            FirebaseAnalyticsEvents.logEvent( EVENT_SCAN_VIN2_CLICKED ,SCREEN_EOL,bundle1)
+            // FirebaseAnalyticsEvents.logEvent( EVENT_SCAN_VIN2_CLICKED ,SCREEN_EOL,bundle1)
 
 
             viewModel.scanImei(binding.etImei.text.toString())
@@ -390,7 +359,7 @@ class EndOfLineTestingActivity : AppCompatActivity() {
                 putString("imei",binding.etImei.text.toString())
                 putString("event_type", EVENT_TYPE_API)
             }
-            FirebaseAnalyticsEvents.logEvent( EVENT_Step1_EOL ,SCREEN_EOL,bundle)
+            // FirebaseAnalyticsEvents.logEvent( EVENT_Step1_EOL ,SCREEN_EOL,bundle)
 
 
 
@@ -425,12 +394,26 @@ class EndOfLineTestingActivity : AppCompatActivity() {
         }
 
         binding.btnScanVin.setOnClickListener {
-            scanner.startScan().addOnSuccessListener { barcode ->
-                barcode.rawValue?.let { raw -> viewModel.scanVin(raw.trim()) }
-            }.addOnCanceledListener {
-                // no-op
-            }.addOnFailureListener {
-                // no-op
+            scanType = 2
+            scanLauncher.launch(Intent(this, CameraXScannerActivity::class.java))
+        }
+    }
+
+    private val scanLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val scanResult = result.data?.getStringExtra("SCAN_RESULT")
+            if (!scanResult.isNullOrEmpty()) {
+                when (scanType) {
+                    1 -> { // IMEI
+                        viewModel.scanImei(scanResult)
+                        imei = scanResult
+                    }
+                    2 -> { // VIN
+                        viewModel.scanVin(scanResult.trim())
+                    }
+                }
             }
         }
     }
@@ -453,7 +436,7 @@ class EndOfLineTestingActivity : AppCompatActivity() {
             putString("plantip", Globals.getPlantIp())
 
         }
-        FirebaseAnalyticsEvents.logEvent( EVENT_PRINT_BUTTON_CLICKED ,SCREEN_EOL,bundle)
+        // FirebaseAnalyticsEvents.logEvent( EVENT_PRINT_BUTTON_CLICKED ,SCREEN_EOL,bundle)
 
         Toast.makeText(this, "Please wait...", Toast.LENGTH_SHORT).show()
 //        printerViewModel.fetchBluetoothPrinters()
@@ -483,7 +466,7 @@ class EndOfLineTestingActivity : AppCompatActivity() {
                     putString("event_type", EVENT_TYPE_BACKEND)
                     putString("error_message", e.message.toString())
                 }
-                FirebaseAnalyticsEvents.logEvent( EVENT_PRINT_BUTTON_CLICKED ,SCREEN_EOL,bundle)
+                // FirebaseAnalyticsEvents.logEvent( EVENT_PRINT_BUTTON_CLICKED ,SCREEN_EOL,bundle)
 
 
 
@@ -494,7 +477,7 @@ class EndOfLineTestingActivity : AppCompatActivity() {
                     ).show()
                 }
 
-                FirebaseAnalyticsEvents.logError(EVENT_PRINT_BUTTON_CLICKED, e, "connect to the printer failure")
+                // FirebaseAnalyticsEvents.logError(EVENT_PRINT_BUTTON_CLICKED, e, "connect to the printer failure")
 
 
             }
@@ -505,12 +488,16 @@ class EndOfLineTestingActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK) {
             val result = data?.getStringExtra("SCAN_RESULT") ?: ""
+            Timber.e("Inside onActivityResult :$result $requestCode }")
             when (requestCode) {
                 1 -> {
+                    Timber.e("Inside onActivityResult 1 :$result }")
                     viewModel.scanImei(result)
                     imei = result
                 }
             }
+        }else{
+            Timber.e("Inside onActivityResult 2 :$requestCode $resultCode}")
         }
     }
 
@@ -523,13 +510,6 @@ class EndOfLineTestingActivity : AppCompatActivity() {
 
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    private fun qrCodeScan(requestCode: Int) {
-        scanIntent?.setOrientationLocked(true)
-        scanIntent?.setPrompt("Scan a barcode or QR Code")
-        scanIntent?.setRequestCode(requestCode)
-        scanIntent?.initiateScan()
     }
 
     private fun showTractorTypeDialog() {

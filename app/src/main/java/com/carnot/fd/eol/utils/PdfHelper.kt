@@ -2,7 +2,6 @@ package com.carnot.fd.eol.utils
 
 import android.content.Context
 import android.os.Environment
-import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents.logCrashError
 import com.itextpdf.kernel.colors.ColorConstants
 import com.itextpdf.kernel.geom.PageSize
 import com.itextpdf.kernel.pdf.PdfDocument
@@ -64,11 +63,11 @@ object PdfHelper {
         } catch (e: Exception) {
             e.printStackTrace()
 
-            logCrashError(
-                apiName = "Error while creating sample pdf function",
-                error = e,
-                message = e.message.toString()
-            )
+//            logCrashError(
+//                apiName = "Error while creating sample pdf function",
+//                error = e,
+//                message = e.message.toString()
+//            )
 
 
             null

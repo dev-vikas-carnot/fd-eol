@@ -2,12 +2,16 @@ package com.carnot.fd.eol.features.activatesim
 
 import android.app.Application
 import com.carnot.fd.eol.BuildConfig
+import com.carnot.fd.eol.data.BaseResponse
+import com.carnot.fd.eol.data.VehicleMappingRequest
+import com.carnot.fd.eol.features.vehicle_mapping.data.DeviceMappingRequest
 import com.carnot.fd.eol.network.ApiService
 import com.google.gson.JsonObject
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.POST
 import retrofit2.http.PUT
 
 /**
@@ -19,6 +23,9 @@ interface SimActivationApiService {
     suspend fun activateSim(
         @Body request: SimActivationRequest,
     ): Response<JsonObject>
+
+    @POST("/user-service/v1/devicemapping")
+    suspend fun deviceMapping(@Body request: DeviceMappingRequest): Response<BaseResponse<JsonObject>>
 
     companion object {
         fun create(application: Application): SimActivationApiService {

@@ -2,7 +2,6 @@ package com.carnot.fd.eol.features.printer.data
 
 import android.content.Context
 import android.net.Uri
-import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents.logCrashError
 import com.carnot.fd.eol.module.AbstractPrinter
 import com.carnot.fd.eol.module.PrinterFactory
 import com.carnot.fd.eol.utils.LoggerHelper
@@ -109,19 +108,19 @@ class PrinterRepository @Inject constructor(
         } catch (e: ConnectionException) {
             LoggerHelper.saveLogToFile(context,"Error in Printer Connected: ${e.message}" )
 
-            logCrashError(
-                apiName = "Error while connectToPrinter function",
-                error = e,
-                message = e.message.toString()
-            )
+//            logCrashError(
+//                apiName = "Error while connectToPrinter function",
+//                error = e,
+//                message = e.message.toString()
+//            )
 
             emit("Error....${e.message}")
         }catch (e:Exception){
-            logCrashError(
-                apiName = "Error while connectToPrinter function",
-                error = e,
-                message = e.message.toString()
-            )
+//            logCrashError(
+//                apiName = "Error while connectToPrinter function",
+//                error = e,
+//                message = e.message.toString()
+//            )
         }
 
     }.flowOn(Dispatchers.IO)

@@ -14,8 +14,6 @@ import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_REPRINT_SCANSUCCESS
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_REPRINT_SCAN_SUCCESS
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_API
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_CLICK
-import com.carnot.fd.eol.firebase.AnalyticsEvents.SCREEN_REPRINT
-import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents
 import com.carnot.fd.eol.network.ApiResponse
 import com.carnot.fd.eol.network.ApiService
 import com.carnot.fd.eol.utils.Globals
@@ -52,7 +50,7 @@ class ReprintViewModelViewModel(val applicationContext: Application): AndroidVie
             putString("event_type", EVENT_TYPE_CLICK)
             putString("vin",result)
         }
-        FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCANSUCCESS, SCREEN_REPRINT,bundle)
+        // FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCANSUCCESS, SCREEN_REPRINT,bundle)
 
         if(Globals.isVinValidString(result)){
             // Simulate scanning VIN
@@ -85,7 +83,7 @@ class ReprintViewModelViewModel(val applicationContext: Application): AndroidVie
                 putString("event_type", EVENT_TYPE_API)
                 putString("vin", ipVin)
             }
-            FirebaseAnalyticsEvents.logApiCall(API_SD_DEVICE_POST_INSTALLATION_STATUS_PRINT, initialBundle)
+            // FirebaseAnalyticsEvents.logApiCall(API_SD_DEVICE_POST_INSTALLATION_STATUS_PRINT, initialBundle)
 
                 _isVinScanned.value = true
                 _vin.value =vinString
@@ -97,13 +95,13 @@ class ReprintViewModelViewModel(val applicationContext: Application): AndroidVie
                     val requestBundle = Bundle().apply {
                         putString("vin", request.vin)
                     }
-                    FirebaseAnalyticsEvents.logApiCall(API_SD_DEVICE_POST_INSTALLATION_STATUS_PRINT, requestBundle)
+                    // FirebaseAnalyticsEvents.logApiCall(API_SD_DEVICE_POST_INSTALLATION_STATUS_PRINT, requestBundle)
 
                     val response = apiService.postInstallationPrint(request)
                     applicationContext.logMessage("Reprint Response Received")
 
                     if (response.status) {
-                        FirebaseAnalyticsEvents.logApiResponse(API_SD_DEVICE_POST_INSTALLATION_STATUS_PRINT, "Success")
+                        // FirebaseAnalyticsEvents.logApiResponse(API_SD_DEVICE_POST_INSTALLATION_STATUS_PRINT, "Success")
 
                         _apiResponseSubmit.postValue(ApiResponse.Success(response.data, response.message))
                         applicationContext.logMessage("Reprint Response Success")
@@ -113,13 +111,13 @@ class ReprintViewModelViewModel(val applicationContext: Application): AndroidVie
                             putString("vin", ipVin)
                             putString("error_message", response.message)
                         }
-                        FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCAN_SUCCESS, SCREEN_REPRINT, errorBundle)
+                        // FirebaseAnalyticsEvents.logEvent(EVENT_REPRINT_SCAN_SUCCESS, SCREEN_REPRINT, errorBundle)
 
-                        FirebaseAnalyticsEvents.logError(
-                            API_SD_DEVICE_POST_INSTALLATION_STATUS_PRINT,
-                            Exception("API Error"),
-                            response.status.toString()+"_"+response.message
-                        )
+                        // FirebaseAnalyticsEvents.logError(
+//                            API_SD_DEVICE_POST_INSTALLATION_STATUS_PRINT,
+//                            Exception("API Error"),
+//                            response.status.toString()+"_"+response.message
+//                        )
 
                         _apiResponseSubmit.postValue(ApiResponse.Error(response.message))
 
@@ -127,17 +125,17 @@ class ReprintViewModelViewModel(val applicationContext: Application): AndroidVie
                     }
                 },
                 onException = {
-                    FirebaseAnalyticsEvents.logError(API_SD_DEVICE_POST_INSTALLATION_STATUS_PRINT, it, "Network failure")
+                    // FirebaseAnalyticsEvents.logError(API_SD_DEVICE_POST_INSTALLATION_STATUS_PRINT, it, "Network failure")
 
                     _apiResponseSubmit.postValue(ApiResponse.Error(it.message.toString()))
                     applicationContext.logMessage("Reprint Api Exception Error : ${it.message}")
                 },
                 onNoInternet = {
-                    FirebaseAnalyticsEvents.logError(
-                        API_SD_DEVICE_POST_INSTALLATION_STATUS_PRINT,
-                        Exception("No Internet"),
-                        "Internet not available"
-                    )
+                    // FirebaseAnalyticsEvents.logError(
+//                        API_SD_DEVICE_POST_INSTALLATION_STATUS_PRINT,
+//                        Exception("No Internet"),
+//                        "Internet not available"
+//                    )
 
                     _apiResponseSubmit.postValue(ApiResponse.Error("No internet"))
                     applicationContext.logMessage("Reprint Api Exception No internet")

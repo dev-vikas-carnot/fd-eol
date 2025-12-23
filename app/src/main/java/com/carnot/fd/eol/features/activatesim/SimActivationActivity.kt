@@ -1,11 +1,13 @@
 package com.carnot.fd.eol.features.activatesim
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.carnot.fd.eol.CustomDialog
@@ -14,11 +16,9 @@ import com.carnot.fd.eol.R
 import com.carnot.fd.eol.databinding.ActivitySimActivationBinding
 import com.carnot.fd.eol.network.ApiResponse
 import androidx.core.widget.doAfterTextChanged
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
-import com.google.zxing.integration.android.IntentIntegrator
+import com.carnot.fd.eol.features.test.CameraXScannerActivity
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 
 @AndroidEntryPoint
 class SimActivationActivity : AppCompatActivity() {
@@ -29,8 +29,22 @@ class SimActivationActivity : AppCompatActivity() {
     private lateinit var loadingDialog: LoadingDialog
     private lateinit var customDialog: CustomDialog
 
-    /*Intent Handles For QR Code Scanning*/
-    private var scanIntent: IntentIntegrator? = null
+    private var isProgrammaticUpdate = false
+
+    private val scanLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+
+            if (result.resultCode != RESULT_OK) return@registerForActivityResult
+
+            val scannedValue =
+                result.data?.getStringExtra("SCAN_RESULT").orEmpty()
+
+            if (scannedValue.isNotBlank()) {
+                viewModel.setDeviceQRFromScan(scannedValue)
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,35 +61,19 @@ class SimActivationActivity : AppCompatActivity() {
         loadingDialog = LoadingDialog(this)
         customDialog = CustomDialog(this)
 
-        val options = GmsBarcodeScannerOptions.Builder()
-            .setBarcodeFormats(
-                Barcode.FORMAT_QR_CODE,
-                Barcode.FORMAT_AZTEC
-            )
-            .enableAutoZoom()
-            .build()
-
-        scanIntent = IntentIntegrator(this)
-        val scanner = GmsBarcodeScanning.getClient(this, options)
-
         // Scan QR to get IMEI
         binding.scanQR.setOnClickListener {
-            scanner.startScan()
-                .addOnSuccessListener { barcode ->
-                    barcode.rawValue?.let { viewModel.setImei(it) }
-                }
-                .addOnCanceledListener {
-                    // user cancelled scan; no-op
-                }
-                .addOnFailureListener {
-                    Toast.makeText(this, getString(R.string.error_scan_failed), Toast.LENGTH_SHORT)
-                        .show()
-                }
+            hideKeyboard(binding.root)
+            scanLauncher.launch(
+                Intent(this, CameraXScannerActivity::class.java)
+            )
         }
 
         // Manual IMEI entry - update ViewModel on each text change so submit button state updates
         binding.etImei.doAfterTextChanged {
-            viewModel.setImei(it?.toString().orEmpty())
+            if (!isProgrammaticUpdate) {
+                viewModel.setImeiManually(it?.toString().orEmpty())
+            }
         }
 
         // Submit button
@@ -107,6 +105,25 @@ class SimActivationActivity : AppCompatActivity() {
                         message = response.message ?: getString(R.string.sim_activation_success)
                     )
                 }
+            }
+        }
+
+        viewModel.imei.observe(this) { imei ->
+            isProgrammaticUpdate = true
+            binding.etImei.setText(imei)
+            binding.etImei.setSelection(imei.length)
+            isProgrammaticUpdate = false
+        }
+
+        viewModel.iccid.observe(this) { iccid ->
+            isProgrammaticUpdate = true
+            binding.etIccid.setText(iccid)
+            binding.etIccid.setSelection(iccid.length)
+            isProgrammaticUpdate = false
+        }
+        binding.etIccid.doAfterTextChanged {
+            if (!isProgrammaticUpdate) {
+                viewModel.setIccidManually(it?.toString().orEmpty())
             }
         }
     }

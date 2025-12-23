@@ -37,7 +37,7 @@ object Constants {
     const val PLANT_2_IP = "10.210.4.56"
     const val PLANT_3_IP = "10.210.24.38"
     const val DEFAULT_IP = "0.0.0.0" // Fallback IP
-    const val PRINTER_PORT = 6101
+    const val PRINTER_PORT = 9100
 
 
 

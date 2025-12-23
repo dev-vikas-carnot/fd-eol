@@ -37,7 +37,6 @@ import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_CLICK
 import com.carnot.fd.eol.firebase.AnalyticsEvents.EVENT_TYPE_VIEW
 import com.carnot.fd.eol.firebase.AnalyticsEvents.SCREEN_LOGIN
 import com.carnot.fd.eol.firebase.AnalyticsEvents.SCREEN_LOGIN_OTP
-import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents
 import com.carnot.fd.eol.network.NetworkResult
 import com.carnot.fd.eol.utils.FullScreenUtils
 import com.carnot.fd.eol.utils.Globals
@@ -74,7 +73,7 @@ class LoginActivity : AppCompatActivity() {
             val bundle = Bundle().apply {
                 putString("event_type", EVENT_TYPE_VIEW)
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_APP_OPENED, SCREEN_LOGIN,bundle)
+            // FirebaseAnalyticsEvents.logEvent(EVENT_APP_OPENED, SCREEN_LOGIN,bundle)
 
 
             binding = DataBindingUtil.setContentView(this, R.layout.activity_login)
@@ -118,7 +117,7 @@ class LoginActivity : AppCompatActivity() {
                     putString("event_type", EVENT_TYPE_VIEW)
                     putString("user_name", it.toString())
                 }
-                FirebaseAnalyticsEvents.logEvent(EVENT_OTP_SCREEN_VIEWED,SCREEN_LOGIN_OTP,bundle)
+                // FirebaseAnalyticsEvents.logEvent(EVENT_OTP_SCREEN_VIEWED,SCREEN_LOGIN_OTP,bundle)
 
                 setUpBottomSheet()
             }
@@ -139,7 +138,7 @@ class LoginActivity : AppCompatActivity() {
                 putString("user_name", binding.etUserName.text.toString())
                 putString("event_type", EVENT_TYPE_CLICK)
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_SIGNIN_API_CALLED,SCREEN_LOGIN,bundle)
+            // FirebaseAnalyticsEvents.logEvent(EVENT_SIGNIN_API_CALLED,SCREEN_LOGIN,bundle)
 //            viewModel.login()
                 dialog.show()
             ViewUtils.hideKeyboard(binding.btnReqVerification)
@@ -167,7 +166,7 @@ class LoginActivity : AppCompatActivity() {
                         putString("user_name", binding.etUserName.text.toString())
                         putString("message", it.message.toString())
                     }
-                    FirebaseAnalyticsEvents.logEvent(EVENT_SIGNIN_API_FAILURE,SCREEN_LOGIN,bundle)
+                    // FirebaseAnalyticsEvents.logEvent(EVENT_SIGNIN_API_FAILURE,SCREEN_LOGIN,bundle)
 
                     progressSnackbar?.dismiss()
                 }
@@ -179,7 +178,7 @@ class LoginActivity : AppCompatActivity() {
                         putString("user_name", binding.etUserName.text.toString())
                         putString("message", it.message.toString())
                     }
-                    FirebaseAnalyticsEvents.logEvent(EVENT_SIGNIN_API_SUCCESS,SCREEN_LOGIN,bundle)
+                    // FirebaseAnalyticsEvents.logEvent(EVENT_SIGNIN_API_SUCCESS,SCREEN_LOGIN,bundle)
 
 
                     progressSnackbar?.dismiss()
@@ -208,7 +207,7 @@ class LoginActivity : AppCompatActivity() {
                         putString("message", it.message.toString())
 
                     }
-                    FirebaseAnalyticsEvents.logEvent(EVENT_OTP_API_FAILURE,SCREEN_LOGIN_OTP,bundle)
+                    // FirebaseAnalyticsEvents.logEvent(EVENT_OTP_API_FAILURE,SCREEN_LOGIN_OTP,bundle)
 
                     progressSnackbar?.dismiss()
                 }
@@ -220,7 +219,7 @@ class LoginActivity : AppCompatActivity() {
                         putString("user_name", it.toString())
                         putString("message", it.message.toString())
                     }
-                    FirebaseAnalyticsEvents.logEvent(EVENT_OTP_API_SUCCESS,SCREEN_LOGIN_OTP,bundle)
+                    // FirebaseAnalyticsEvents.logEvent(EVENT_OTP_API_SUCCESS,SCREEN_LOGIN_OTP,bundle)
 
                     dialog.dismiss()
                     progressSnackbar?.dismiss()
@@ -304,7 +303,7 @@ class LoginActivity : AppCompatActivity() {
                 putString("event_type", EVENT_TYPE_CLICK)
                 putString("user_name", it.toString())
             }
-            FirebaseAnalyticsEvents.logEvent(EVENT_OTP_ENTERED,SCREEN_LOGIN_OTP,bundle)
+            // FirebaseAnalyticsEvents.logEvent(EVENT_OTP_ENTERED,SCREEN_LOGIN_OTP,bundle)
 
 
             viewModel.verifyLogin()

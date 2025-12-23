@@ -2,7 +2,6 @@ package com.carnot.fd.eol.utils
 
 import android.content.Context
 import android.util.Log
-import com.carnot.fd.eol.firebase.FirebaseAnalyticsEvents.logCrashError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,11 +36,11 @@ object LoggerHelper {
                 Log.d("Log", "Log saved successfully to file: ${file.absolutePath}")
             } catch (e: Exception) {
                 Log.e("Log", "Error saving log to file: ${e.message}")
-                logCrashError(
-                    apiName = "saveLogToFile",
-                    error = e,
-                    message = "Error saving log to file"
-                )
+//                logCrashError(
+//                    apiName = "saveLogToFile",
+//                    error = e,
+//                    message = "Error saving log to file"
+//                )
             }
         }
     }
